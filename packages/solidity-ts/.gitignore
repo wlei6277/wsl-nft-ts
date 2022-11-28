@@ -1,3 +1,5 @@
 
 !generated/.gitignore
 /generated/**/*
+
+.env
