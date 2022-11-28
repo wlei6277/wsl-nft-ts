@@ -23,7 +23,8 @@
     "lint": "eslint --config ./.eslintrc.js --ignore-path ./.eslintignore ./deploy/**/*.ts ./tasks/**/*.ts ./tests/**/*.ts ./helpers/**/*.ts",
     "solhint": "solhint ./contracts/**/*.sol",
     "format": "yarn prettier -w ./deploy/**/*.ts ./tasks/**/*.ts ./tests/**/*.ts ./helpers/**/*.ts contracts/**/*.sol ",
-    "format:check": "yarn prettier -c ./deploy/**/*.ts ./tasks/**/*.ts ./tests/**/*.ts ./helpers/**/*.ts ./contracts/**/*.sol "
+    "format:check": "yarn prettier -c ./deploy/**/*.ts ./tasks/**/*.ts ./tests/**/*.ts ./helpers/**/*.ts ./contracts/**/*.sol ",
+    "store-content": "yarn ts-node scripts/store-content.ts"
   },
   "dependencies": {
     "@atixlabs/hardhat-time-n-mine": "^0.0.5",
