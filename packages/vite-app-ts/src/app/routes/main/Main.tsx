@@ -1,25 +1,25 @@
-import React, { FC, ReactElement, useCallback, useContext, useEffect, useState } from 'react';
+import { FC, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import '~~/styles/main-page.css';
-import { useGasPrice, useContractLoader, useContractReader, useBalance } from 'eth-hooks';
+import { useGasPrice, useContractLoader, useBalance } from 'eth-hooks';
 import { useDexEthPrice } from 'eth-hooks/dapps';
 
 import { GenericContract } from 'eth-components/ant/generic-contract';
-import { Hints, Subgraph } from '~~/app/routes';
 import { transactor } from 'eth-components/functions';
 
-import { ethers, BigNumber } from 'ethers';
+import { BigNumber } from 'ethers';
 import { Spin } from 'antd';
 import { weiToUsd } from '~~/app/common/helpers';
+
+import SettleCompetitionModal from '../results/SettleCompetionModal';
+import SettleLeagueModal from '../results/SettleLeagueModal';
 
 import { useEventListener } from 'eth-hooks';
 import { MainPageMenu, MainPageFooter, MainPageHeader } from './components';
 import { useAppContracts } from '~~/app/routes/main/hooks/useAppContracts';
 import { useScaffoldProviders as useScaffoldAppProviders } from '~~/app/routes/main/hooks/useScaffoldAppProviders';
 import { useScaffoldHooks as useScaffoldHooksExamples } from './hooks/useScaffoldHooksExamples';
-import { getNetworkInfo } from '~~/helpers/getNetworkInfo';
-import { subgraphUri } from '~~/config/subgraphConfig';
 import { useEthersContext } from 'eth-hooks/context';
 import { NETWORKS } from '~~/models/constants/networks';
 import { mainnetProvider } from '~~/config/providersConfig';
@@ -27,6 +27,8 @@ import { EthComponentsSettingsContext } from 'eth-components/models';
 import { useDebounce } from 'use-debounce';
 
 import Surfers from './components/Surfers';
+import Results from '../results/Results';
+import SettledLeagueMessage from './components/SettledLeagueMessage';
 
 import { WSLNFT, WSLFantasyLeague } from '../../../generated/contract-types';
 
@@ -44,6 +46,8 @@ export const Main: FC = () => {
   // -----------------------------
   // Providers, signers & wallets
   // -----------------------------
+  const [settleCompModalIsOpen, setSettleCompModalIsOpen] = useState(false);
+  const [settleLeagueModalIsOpen, setSettleLeagueModalIsOpen] = useState(false);
 
   // 🛰 providers
   // see useLoadProviders.ts for everything to do with loading the right providers
@@ -207,7 +211,9 @@ export const Main: FC = () => {
         <MainPageMenu route={route} setRoute={setRoute} />
         <Switch>
           <section className="p-10 h-full w-full">
-            {hasLoadedContracts ? (
+            {!hasLoadedContracts && <Spin tip="Loading contracts....." size="large" />}
+            {hasLoadedContracts && !isLive && <SettledLeagueMessage />}
+            {hasLoadedContracts && isLive && (
               <>
                 <Route exact path="/">
                   <Surfers
@@ -215,6 +221,15 @@ export const Main: FC = () => {
                     initialPriceUsd={initialPriceUsd}
                     surferData={surferData}
                     nftContractAddress={nft.address}
+                  />
+                </Route>
+                <Route exact path="/results">
+                  <Results
+                    fantasyRead={fantasyLeague}
+                    weiToUsd={(wei: BigNumber): string => weiToUsd(wei, ethPrice)}
+                    surferData={surferData}
+                    setSettleCompModalIsOpen={setSettleCompModalIsOpen}
+                    setSettleLeagueModalIsOpen={setSettleLeagueModalIsOpen}
                   />
                 </Route>
                 <Route path="/mainnetdai">
@@ -229,11 +244,28 @@ export const Main: FC = () => {
                   )}
                 </Route>
               </>
-            ) : (
-              <Spin tip="Loading contracts....." size="large" />
             )}
           </section>
         </Switch>
+        {tx && (
+          <SettleLeagueModal
+            isOpen={settleLeagueModalIsOpen}
+            league={leagueWrite}
+            onClose={(): void => setSettleLeagueModalIsOpen(false)}
+            surferData={surferData}
+            tx={tx}
+          />
+        )}
+        {tx && (
+          <SettleCompetitionModal
+            competitionNumber={currentComp}
+            isOpen={settleCompModalIsOpen}
+            league={leagueWrite}
+            onClose={(): void => setSettleCompModalIsOpen(false)}
+            surferData={surferData}
+            tx={tx}
+          />
+        )}
       </BrowserRouter>
 
       <MainPageFooter scaffoldAppProviders={scaffoldAppProviders} price={ethPrice} />

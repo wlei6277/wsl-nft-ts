@@ -20,7 +20,7 @@ export const MainPageMenu: FC<IMainPageMenuProps> = (props) => (
           props.setRoute('/');
         }}
         to="/">
-        Home
+        Surfers
       </Link>
     </Menu.Item>
     <Menu.Item key="/events">
@@ -28,26 +28,8 @@ export const MainPageMenu: FC<IMainPageMenuProps> = (props) => (
         onClick={() => {
           props.setRoute('/events');
         }}
-        to="/events">
-        Events
-      </Link>
-    </Menu.Item>
-    <Menu.Item key="/debug">
-      <Link
-        onClick={() => {
-          props.setRoute('/debug');
-        }}
-        to="/debug">
-        Debug
-      </Link>
-    </Menu.Item>
-    <Menu.Item key="/hints">
-      <Link
-        onClick={() => {
-          props.setRoute('/hints');
-        }}
-        to="/hints">
-        Hints
+        to="/results">
+        Results
       </Link>
     </Menu.Item>
     <Menu.Item key="/mainnetdai">
@@ -57,15 +39,6 @@ export const MainPageMenu: FC<IMainPageMenuProps> = (props) => (
         }}
         to="/mainnetdai">
         Mainnet DAI
-      </Link>
-    </Menu.Item>
-    <Menu.Item key="/subgraph">
-      <Link
-        onClick={() => {
-          props.setRoute('/subgraph');
-        }}
-        to="/subgraph">
-        Subgraph
       </Link>
     </Menu.Item>
   </Menu>

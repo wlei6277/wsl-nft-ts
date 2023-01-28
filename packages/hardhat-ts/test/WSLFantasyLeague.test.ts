@@ -1,12 +1,10 @@
-import '~helpers/hardhat-imports';
-import '~tests/utils/chai-imports';
+// import '@nomicfoundation/hardhat-chai-matchers';
 
 import { expect } from 'chai';
-import { BigNumber, ContractReceipt, Signer } from 'ethers';
-// import { WSLNFT__factory, WSLNFT, WSLFantasyLeague, WSLFantasyLeague__factory } from '../generated/artifacts/contracts/WSLFantasyLeague.sol';
-import hre, { ethers } from 'hardhat';
+import { BigNumber, Contract, ContractReceipt, Signer } from 'ethers';
 
-import { getHardhatSigners } from '~helpers/functions/accounts';
+import { ethers } from 'hardhat';
+import { SignerWithAddress } from 'hardhat-deploy-ethers/signers';
 
 function weiToAud(wei: BigNumber): string {
   const eth = Number(ethers.utils.formatEther(wei));
@@ -14,44 +12,44 @@ function weiToAud(wei: BigNumber): string {
 }
 
 describe('WSLFantasyLeague', function () {
-  let wslNFTContract;
-  let wslFantasyLeagueContract;
+  let wslNFTContract: Contract;
+  let wslFantasyLeagueContract: Contract;
   let initialSurferPrice: BigNumber;
   let numComps: number;
+  let user1: SignerWithAddress;
+  let user2: SignerWithAddress;
+  let user3: SignerWithAddress;
+  let user4: SignerWithAddress;
 
   async function getLeagueBalance(): Promise<BigNumber> {
     return await ethers.provider.getBalance(wslFantasyLeagueContract.address);
   }
 
-  async function mintSurfers(numSurfers = 3): Promise<void> {
+  async function mintSurfers(numMinted = 3): Promise<void> {
     const mintTransactions = await Promise.all(
-      [...new Array(numSurfers).fill(1)].map(
+      [...new Array(numMinted).fill(1)].map(
         async () => await wslNFTContract.mintItem(wslFantasyLeagueContract.address, 'QmfVMAmNM1kDEBYrC2TPzQDoCRFH6F5tE1e9Mr4FkkR5Xr')
       )
     );
     await Promise.all(mintTransactions.map(async (transaction) => await transaction.wait()));
   }
 
-  async function buySurfers(numPlayers = 3): Promise<ContractReceipt[]> {
-    console.log(`Initial buying round commencing. Num players: ${numPlayers} at ${weiToAud(initialSurferPrice)} each`);
-    const users = await getHardhatSigners(hre);
+  async function buySurfers(): Promise<ContractReceipt[]> {
+    console.log(`Initial buying round commencing.  at ${weiToAud(initialSurferPrice)} each`);
+
     console.log('\t', ' Buying surfer cards...');
-    const purchaseTransactions = await Promise.all(
-      [...new Array(numPlayers).fill(1)].map(async (_, i) => {
+    return Promise.all(
+      [user1, user2, user3].map(async (user, i) => {
         const tokenId = i + 1;
-        const user = users[`user${tokenId}`] as Signer;
-        return await wslFantasyLeagueContract.connect(user).buySurfer(tokenId, { value: initialSurferPrice });
+        const tx = await wslFantasyLeagueContract.connect(user).buySurfer(tokenId, { value: initialSurferPrice });
+        return tx.wait();
       })
     );
-
-    console.log('\t', ' ⏳ Waiting for minting confirmation...');
-
-    return await Promise.all(purchaseTransactions.map(async (tx) => await tx.wait()));
   }
 
-  async function runLeague(numMinted = 3, numBought = 3): Promise<void> {
+  async function runLeague(numMinted = 3): Promise<void> {
     await mintSurfers(numMinted);
-    await buySurfers(numBought);
+    await buySurfers();
     for (let i = 0; i < numComps; i += 1) {
       await wslFantasyLeagueContract.settleCompetition(1, 2, 3);
     }
@@ -69,29 +67,36 @@ describe('WSLFantasyLeague', function () {
 
   beforeEach(async () => {
     console.log('\t', 'Deploying contracts.....');
-    const { deployer } = await getHardhatSigners(hre);
-    const factory = new WSLNFT__factory(deployer);
+    const factory = await ethers.getContractFactory('WSLNFT');
     wslNFTContract = await factory.deploy();
-    const leagueFactory = new WSLFantasyLeague__factory(deployer);
+    const leagueFactory = await ethers.getContractFactory('WSLFantasyLeague');
     wslFantasyLeagueContract = await leagueFactory.deploy(wslNFTContract.address);
     console.log('\t', 'Contracts deployed');
     initialSurferPrice = await wslFantasyLeagueContract.INITIAL_PRICE();
     numComps = (await wslFantasyLeagueContract.NUM_COMPETITIONS()).toNumber();
+    const [_deployer, u1, u2, u3, u4] = await ethers.getSigners();
+    //@ts-ignore
+    user1 = u1;
+    //@ts-ignore
+    user2 = u2;
+    //@ts-ignore
+    user3 = u3;
+    //@ts-ignore
+    user4 = u4;
   });
 
   describe('buySurfer()', function () {
     it('does not allow surfer to be bought if league has already been settled', async function () {
-      const { user4 } = await getHardhatSigners(hre);
-      await runLeague(4, 3);
+      const user4 = (await ethers.getSigners())[4];
+      await runLeague(4);
       await expect(wslFantasyLeagueContract.connect(user4).buySurfer(4, { value: initialSurferPrice })).to.be.revertedWith('League is finished');
     });
     it('should allow an available surfer to be bought', async function () {
-      const { user1 } = await getHardhatSigners(hre);
       console.log('\t', ' 🔨 Minting...');
       const tx1 = await wslNFTContract.mintItem(wslFantasyLeagueContract.address, 'QmfVMAmNM1kDEBYrC2TPzQDoCRFH6F5tE1e9Mr4FkkR5Xr');
       console.log('\t', ' ⏳ Waiting for minting confirmation...');
       const tx1Receipt = await tx1.wait();
-      const transferEvent = tx1Receipt.events?.find((event) => event.event === 'Transfer');
+      const transferEvent = tx1Receipt.events?.find((event: { event: string }) => event.event === 'Transfer');
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       const mintedTokenId = transferEvent?.args?.tokenId?.toNumber() as number;
       const initialPrice = await wslFantasyLeagueContract.INITIAL_PRICE();
@@ -112,7 +117,7 @@ describe('WSLFantasyLeague', function () {
       await mintSurfers();
       await buySurfers();
       console.log('\t', ' Attempting to buy already bought surfer.....');
-      const { user4 } = await getHardhatSigners(hre);
+      const user4 = (await ethers.getSigners())[4];
       await expect(wslFantasyLeagueContract.connect(user4).buySurfer(1, { value: await wslFantasyLeagueContract.INITIAL_PRICE() })).to.be.revertedWith(
         'Surfer has already been bought'
       );
@@ -148,7 +153,7 @@ describe('WSLFantasyLeague', function () {
       return originalBalance.sub(initialSurferPrice).sub(getGasUsed(purchaseTransaction)).add(winnings);
     }
     it('transfers winnings to the owners of 1st, 2nd and 3rd', async function () {
-      const { user1, user2, user3 } = await getHardhatSigners(hre);
+      const [_deployer, user1, user2, user3] = await ethers.getSigners();
 
       const user1OriginalBalance = await user1.getBalance();
       const user2OriginalBalance = await user2.getBalance();
@@ -163,7 +168,8 @@ describe('WSLFantasyLeague', function () {
       const [firstWinnings, secondWinnings, thirdWinnings] = await wslFantasyLeagueContract.calculateCompetitionWinnings();
 
       console.log('\t', 'Settling competition.....');
-      await wslFantasyLeagueContract.settleCompetition(1, 2, 3);
+      const tx = await wslFantasyLeagueContract.settleCompetition(1, 2, 3);
+      await tx.wait();
 
       expect(await user1.getBalance()).to.equal(calculatePostSettleBalance(user1OriginalBalance, tx4, firstWinnings));
       expect(await user2.getBalance()).to.equal(calculatePostSettleBalance(user2OriginalBalance, tx5, secondWinnings));
@@ -188,7 +194,7 @@ describe('WSLFantasyLeague', function () {
       await expect(wslFantasyLeagueContract.settleCompetition(1, 2, 3)).to.be.revertedWith('All comps settled');
     });
     it('does not transfer winnings if no one owns the 3rd place surfer', async function () {
-      const { user1, user2 } = await getHardhatSigners(hre);
+      const [_deployer, user1, user2] = await ethers.getSigners();
 
       const user1OriginalBalance = await user1.getBalance();
       const user2OriginalBalance = await user2.getBalance();
@@ -262,7 +268,7 @@ describe('WSLFantasyLeague', function () {
     });
     it('transfers the remaining balance evenly amongst all the token owners if the surfer has not been purchased', async function () {
       // TODO check hasBeenSettled
-      const { user2, user3 } = await getHardhatSigners(hre);
+      const [_deployer, user2, user3] = await ethers.getSigners();
       const numSurfers = 4;
       const numPlayers = 3;
       await mintSurfers(numSurfers);
