@@ -9,13 +9,14 @@ import { GenericContract } from 'eth-components/ant/generic-contract';
 import { Hints, Subgraph } from '~~/app/routes';
 import { transactor } from 'eth-components/functions';
 
-import { ethers } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
+import { Spin } from 'antd';
+import { weiToUsd } from '~~/app/common/helpers';
 
 import { useEventListener } from 'eth-hooks';
-import { MainPageMenu, MainPageContracts, MainPageFooter, MainPageHeader, DEX as DEX_UI, Events as EventsUI } from './components';
+import { MainPageMenu, MainPageFooter, MainPageHeader } from './components';
 import { useAppContracts } from '~~/app/routes/main/hooks/useAppContracts';
 import { useScaffoldProviders as useScaffoldAppProviders } from '~~/app/routes/main/hooks/useScaffoldAppProviders';
-import { useBurnerFallback } from '~~/app/routes/main/hooks/useBurnerFallback';
 import { useScaffoldHooks as useScaffoldHooksExamples } from './hooks/useScaffoldHooksExamples';
 import { getNetworkInfo } from '~~/helpers/getNetworkInfo';
 import { subgraphUri } from '~~/config/subgraphConfig';
@@ -25,7 +26,19 @@ import { mainnetProvider } from '~~/config/providersConfig';
 import { EthComponentsSettingsContext } from 'eth-components/models';
 import { useDebounce } from 'use-debounce';
 
+import Surfers from './components/Surfers';
+
+import { WSLNFT, WSLFantasyLeague } from '../../../generated/contract-types';
+
 export const DEBUG = false;
+
+export interface SurferData {
+  tokenId: string;
+  name: string;
+  imgUrl: string;
+  ownerAddress: string;
+  isAvailable: boolean;
+}
 
 export const Main: FC = () => {
   // -----------------------------
@@ -40,7 +53,7 @@ export const Main: FC = () => {
   const ethersContext = useEthersContext();
 
   // if no user is found use a burner wallet on localhost as fallback if enabled
-  useBurnerFallback(scaffoldAppProviders, true);
+  // useBurnerFallback(scaffoldAppProviders, true);
 
   // -----------------------------
   // Contracts use examples
@@ -60,6 +73,9 @@ export const Main: FC = () => {
   // you need to pass the appropriate provider (readonly) or signer (write)
   const mainnetContracts = useContractLoader(appContractConfig, mainnetProvider, NETWORKS['mainnet'].chainId);
 
+  const nft = readContracts['WSLNFT'] as WSLNFT;
+  const fantasyLeague = readContracts['WSLFantasyLeague'] as WSLFantasyLeague;
+
   // -----------------------------
   // example for current contract and listners
   // -----------------------------
@@ -77,6 +93,70 @@ export const Main: FC = () => {
 
   // 💵 This hook will get the price of ETH from 🦄 Uniswap:
   const ethPrice = useDexEthPrice(scaffoldAppProviders.mainnetProvider, scaffoldAppProviders.targetNetwork);
+  const [initialPriceWei, setInitialPriceWei] = useState(BigNumber.from(0));
+  const [initialPriceUsd, setInitialPriceUsd] = useState('');
+  useEffect(() => {
+    const updateInitialPriceUsd = async (): Promise<void> => {
+      const initialPriceInWei = await fantasyLeague.INITIAL_PRICE();
+      setInitialPriceWei(initialPriceInWei);
+
+      console.log({ initialPriceInWei, ethPrice, usd: weiToUsd(initialPriceInWei, ethPrice) });
+
+      setInitialPriceUsd(weiToUsd(initialPriceInWei, ethPrice));
+    };
+    if (fantasyLeague?.address) {
+      updateInitialPriceUsd().catch((error) => console.error(error));
+    }
+  }, [fantasyLeague, ethPrice]);
+
+  const [transferEvents] = useEventListener(nft, 'Transfer', 0);
+
+  const [surferData, setSurferData] = useState<SurferData[]>([]);
+  useEffect(() => {
+    const updateSurferData = async (): Promise<void> => {
+      const update: SurferData[] = [];
+      const numTokens = await nft.totalSupply();
+      console.log('Fetching data for this number of surfers: ', numTokens.toNumber());
+      for (let i = 0; i < numTokens.toNumber(); i += 1) {
+        const tokenId = await nft.tokenByIndex(i);
+        const tokenURI = await nft.tokenURI(tokenId);
+        const ownerAddress = await nft.ownerOf(tokenId);
+        const { name, image } = (await fetch(tokenURI).then((stream) => stream.json())) as {
+          name: string;
+          image: string;
+        };
+        update.push({
+          name,
+          imgUrl: image.replace('ipfs://', 'https://ipfs.io/ipfs/'),
+          tokenId: tokenId.toString(),
+          ownerAddress,
+          isAvailable: ownerAddress === fantasyLeague?.address,
+        });
+      }
+      setSurferData(update);
+    };
+    if (nft?.address) updateSurferData().catch((err) => console.error(err));
+  }, [nft, fantasyLeague, transferEvents]);
+
+  const [currentComp, setCurrentComp] = useState('');
+  const [isLive, setIsLive] = useState(true);
+
+  useEffect(() => {
+    const updateCurrentComp = async (): Promise<void> => {
+      const numComps = await fantasyLeague.NUM_COMPETITIONS();
+      const numUnsettledComps = await fantasyLeague.numUnsettledCompetitions();
+      const currentComp = numComps && numUnsettledComps && Number(numComps) - Number(numUnsettledComps) + 1;
+      setCurrentComp(currentComp.toString());
+    };
+    const updateIsLive = async (): Promise<void> => {
+      const hasBeenSettled = await fantasyLeague.hasBeenSettled();
+      setIsLive(!hasBeenSettled);
+    };
+    if (fantasyLeague?.address) {
+      updateCurrentComp().catch((error) => console.error(error));
+      updateIsLive().catch((error) => console.error(error));
+    }
+  }, [fantasyLeague]);
 
   // 💰 this hook will get your balance
   const yourCurrentBalance = useBalance(ethersContext.account ?? '');
@@ -100,14 +180,23 @@ export const Main: FC = () => {
   const gasPrice = useGasPrice(ethersContext.chainId, 'fast');
   const tx = transactor(ethComponentsSettings, ethersContext?.signer, gasPrice);
 
-  const [accountAddress] = useDebounce<string | undefined>(
-    ethersContext.account,
-    200,
-    {
-      trailing: true,
-    }
-  );
+  const leagueWrite = writeContracts['WSLFantasyLeague'] as WSLFantasyLeague;
 
+  const buySurfer = async (tokenId: string): Promise<void> => {
+    if (tx && leagueWrite?.address) {
+      try {
+        await tx(leagueWrite.buySurfer(tokenId, { value: initialPriceWei }));
+      } catch (error) {}
+    } else {
+      console.log('Contract has not loaded');
+    }
+  };
+
+  const [accountAddress] = useDebounce<string | undefined>(ethersContext.account, 200, {
+    trailing: true,
+  });
+
+  const hasLoadedContracts = Boolean(nft && fantasyLeague);
 
   return (
     <div className="App">
@@ -117,76 +206,33 @@ export const Main: FC = () => {
       <BrowserRouter>
         <MainPageMenu route={route} setRoute={setRoute} />
         <Switch>
-          <Route exact path="/">
-            <DEX_UI
-              scaffoldAppProviders={scaffoldAppProviders}
-              appContractConfig={appContractConfig}
-              readContracts={readContracts}
-              writeContracts={writeContracts}
-              tx={tx}
-              address={accountAddress}
-            />
-          </Route>
-          <Route exact path="/events">
-            <EventsUI
-              contract={readContracts["DEX"]}
-              eventName="EthToTokenSwap"
-              mainnetProvider={scaffoldAppProviders.mainnetProvider}
-              startBlock={1}
-            />
-            <EventsUI
-              contract={readContracts["DEX"]}
-              eventName="TokenToEthSwap"
-              mainnetProvider={scaffoldAppProviders.mainnetProvider}
-              startBlock={1}
-            />
-            <EventsUI
-              contract={readContracts["DEX"]}
-              eventName="LiquidityProvided"
-              mainnetProvider={scaffoldAppProviders.mainnetProvider}
-              startBlock={1}
-            />
-            <EventsUI
-              contract={readContracts["DEX"]}
-              eventName="LiquidityRemoved"
-              mainnetProvider={scaffoldAppProviders.mainnetProvider}
-              startBlock={1}
-            />
-          </Route>
-          <Route exact path="/debug">
-            <MainPageContracts
-              scaffoldAppProviders={scaffoldAppProviders}
-              mainnetContracts={mainnetContracts}
-              appContractConfig={appContractConfig}
-            />
-          </Route>
-          {/* you can add routes here like the below examlples */}
-          <Route path="/hints">
-            <Hints
-              address={ethersContext?.account ?? ''}
-              yourCurrentBalance={yourCurrentBalance}
-              mainnetProvider={scaffoldAppProviders.mainnetProvider}
-              price={ethPrice}
-            />
-          </Route>
-          <Route path="/mainnetdai">
-            {mainnetProvider != null && (
-              <GenericContract
-                contractName="DAI"
-                contract={mainnetContracts?.['DAI']}
-                mainnetProvider={scaffoldAppProviders.mainnetProvider}
-                blockExplorer={NETWORKS['mainnet'].blockExplorer}
-                contractConfig={appContractConfig}
-              />
+          <section className="p-10 h-full w-full">
+            {hasLoadedContracts ? (
+              <>
+                <Route exact path="/">
+                  <Surfers
+                    buySurfer={buySurfer}
+                    initialPriceUsd={initialPriceUsd}
+                    surferData={surferData}
+                    nftContractAddress={nft.address}
+                  />
+                </Route>
+                <Route path="/mainnetdai">
+                  {mainnetProvider != null && (
+                    <GenericContract
+                      contractName="DAI"
+                      contract={mainnetContracts?.['DAI']}
+                      mainnetProvider={scaffoldAppProviders.mainnetProvider}
+                      blockExplorer={NETWORKS['mainnet'].blockExplorer}
+                      contractConfig={appContractConfig}
+                    />
+                  )}
+                </Route>
+              </>
+            ) : (
+              <Spin tip="Loading contracts....." size="large" />
             )}
-          </Route>
-          <Route path="/subgraph">
-            <Subgraph
-              subgraphUri={subgraphUri}
-              writeContracts={writeContracts}
-              mainnetProvider={scaffoldAppProviders.mainnetProvider}
-            />
-          </Route>
+          </section>
         </Switch>
       </BrowserRouter>
 

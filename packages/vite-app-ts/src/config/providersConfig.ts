@@ -29,6 +29,8 @@ const mainnetInfura = new StaticJsonRpcProvider('https://mainnet.infura.io/v3/' 
 export const mainnetProvider =
   mainnetScaffoldEthProvider && mainnetScaffoldEthProvider._network ? mainnetScaffoldEthProvider : mainnetInfura;
 
+console.log('MAINNET PROVIDER IS', mainnetProvider);
+
 // -------------------
 // connecting to local provider
 // -------------------

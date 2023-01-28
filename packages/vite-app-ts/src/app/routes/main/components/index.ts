@@ -1,3 +1,4 @@
+
 import { lazier } from 'eth-hooks/helpers';
 
 // use lazy/lazier for react lazy loading
@@ -25,4 +26,6 @@ export const DEX = lazier(() => import('./DEX'), 'DEX');
 /**
  * lazy/lazier loaded component
  */
- export const Events = lazier(() => import('./Events'), 'Events');
+export const Events = lazier(() => import('./Events'), 'Events');
+
+export const Surfers = lazier(() => import('./Surfers'), 'Surfers');
