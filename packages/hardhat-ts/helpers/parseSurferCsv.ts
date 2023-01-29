@@ -8,6 +8,7 @@ export interface CSVRow {
 export interface SurferData {
   name: string;
   country: string;
+  ipfsUrl: string;
 }
 
 export function parseSurfers(): Parser {
@@ -19,7 +20,8 @@ export function parseSurfers(): Parser {
       // name, description, type, attack, defense, speed, and number.
       const name = element.Surfer as string;
       const country = element.Country as string;
-      return { name, country };
+      const ipfsUrl = element.Country as string;
+      return { name, country, ipfsUrl };
     }
   });
 }
