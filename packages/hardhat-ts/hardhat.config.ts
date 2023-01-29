@@ -11,7 +11,7 @@ import '@nomiclabs/hardhat-ethers';
 import '@tenderly/hardhat-tenderly';
 import 'hardhat-deploy';
 // not required as we are using @nomiclabs/hardhat-ethers@npm:hardhat-deploy-ethers
-
+import { SurferData, parseSurfers } from './helpers/parseSurferCsv';
 // import 'solidity-coverage';
 
 import * as fs from 'fs';
@@ -37,7 +37,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 // Select the network you want to deploy to here:
 //
 
-const defaultNetwork = 'localhost';
+const defaultNetwork = 'optimism';
 
 const getMnemonic = () => {
   try {
@@ -64,23 +64,29 @@ const config: HardhatUserConfig = {
   // (you will need to restart the `yarn run start` dev server after editing the .env)
 
   networks: {
+    optimism: {
+      url: 'https://optimism-mainnet.infura.io/v3/28335438fdf84172aa7211d86c94aee6',
+      accounts: {
+        mnemonic: getMnemonic(),
+      },
+    },
     localhost: {
       url: 'http://localhost:8545',
       /*
         if there is no mnemonic, it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)
       */
-      // accounts: {
-      //   mnemonic: getMnemonic(),
-      //   accountsBalance: '10000000000000000000',
-      // },
+      accounts: {
+        mnemonic: getMnemonic(),
+        accountsBalance: '10000000000000000000',
+      },
     },
-    // hardhat: {
-    //   accounts: {
-    //     mnemonic: getMnemonic(),
-    //     accountsBalance: '10000000000000000000',
-    //   },
-    // },
+    hardhat: {
+      accounts: {
+        mnemonic: getMnemonic(),
+        accountsBalance: '10000000000000000000',
+      },
+    },
     rinkeby: {
       url: 'https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', // <---- YOUR INFURA ID! (or it won't work)
       accounts: {
@@ -167,7 +173,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     // Add your api key here
-    apiKey: 'DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW',
+    apiKey: '3XENY6ZT5911CFWCC2JNQQZR1QNDV5V3TQ',
   },
 };
 export default config;
@@ -376,6 +382,46 @@ function send(signer: Signer, txparams: any) {
   //     // checkForReceipt(2, params, transactionHash, resolve)
   //   });
 }
+
+task('mint-missing-surfers', 'mint the missing surfers').setAction(async (_taskArgs, hre) => {
+  const { address: nftContractAddress } = await hre.deployments.get('WSLNFT');
+  const nftContract = await hre.ethers.getContractAt('WSLNFT', nftContractAddress);
+  const { address: leagueContractAddress } = await hre.deployments.get('WSLFantasyLeague');
+  const surferParser = parseSurfers();
+  const SURFER_CSV_PATH = path.join(__dirname, './assets/missing_surfers.csv');
+  console.log('Reading csv data');
+  const surferData = await new Promise<SurferData[]>((resolve, reject) => {
+    const surferData: SurferData[] = [];
+    return fs
+      .createReadStream(SURFER_CSV_PATH)
+      .pipe(surferParser)
+      .on('data', (chunk: { Name: string; Country: string; Url: string }) => {
+        surferData.push({ name: chunk.Name, country: chunk.Country, ipfsUrl: chunk.Url });
+        console.log('Surfer: ', chunk);
+      })
+      .on('end', () => resolve(surferData))
+      .on('error', (error: any) => reject(error));
+  });
+  const promises = [];
+  console.log('Minting surfers here we go!!!!');
+  for (let i = 0; i < surferData.length; i += 1) {
+    const { name, ipfsUrl } = surferData[i];
+    console.log(`Minting ${name} with tokenUri ${ipfsUrl}`);
+    const tx = await nftContract.mintItem(leagueContractAddress, ipfsUrl.replace('ipfs://', ''));
+    promises.push(tx);
+  }
+
+  console.log('Waiting for transactions to finish......');
+
+  await Promise.all(
+    promises.map(async (transaction) => {
+      const tx = await transaction.wait();
+      // console.log(tx);
+    })
+  );
+
+  console.log('Congratulations the league has been deployed, let the games begin!');
+});
 
 task('send', 'Send ETH')
   .addParam('from', 'From address or account index')
