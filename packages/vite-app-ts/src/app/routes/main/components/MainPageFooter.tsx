@@ -34,10 +34,6 @@ export const MainPageFooter: FC<IMainPageFooterProps> = (props) => {
         padding: 10,
       }}>
       <Row align="middle" gutter={[4, 4]}>
-        <Col span={8}>
-          <Ramp price={props.price} address={ethersContext?.account ?? ''} networks={NETWORKS} />
-        </Col>
-
         <Col
           span={8}
           style={{
@@ -56,24 +52,7 @@ export const MainPageFooter: FC<IMainPageFooterProps> = (props) => {
           style={{
             textAlign: 'center',
             opacity: 1,
-          }}>
-          <Button
-            onClick={() => {
-              window.open('https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA');
-            }}
-            size="large"
-            shape="round">
-            <span
-              style={{
-                marginRight: 8,
-              }}
-              role="img"
-              aria-label="support">
-              💬
-            </span>
-            Support
-          </Button>
-        </Col>
+          }}></Col>
       </Row>
 
       <Row align="middle" gutter={[4, 4]}>
