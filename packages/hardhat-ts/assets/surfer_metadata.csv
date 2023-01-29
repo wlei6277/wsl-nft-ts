@@ -1,4 +1,35 @@
-Number,Name,Country
-1,Barron Mamiya,Hawaii
-2,Caio Ibelli,Brazil
-3,Callum Robson,Australia
+Number,Name,Country,Url
+1,BarronMamiya,Hawaii,ipfs://bafyreihzdzfec6uql6i5baqcajvgbbrr63b3izihcz75u4u247htdbnv34/metadata.json
+2,Caio Ibelli,Brazil,ipfs://bafyreicog7j3dppth64yq4pxgjw5a76zashsu4ti6nxwb5lrmquhv4my5e/metadata.json
+3,Callum Robson,Australia,ipfs://bafyreiadit2cugxmcqtmblre2btthhdcws7235a6ppgs4sbtldgrk677wu/metadata.json
+4,Connor O leary,Australia,ipfs://bafyreiaxfxe65bh2t5gqjpb5uigxdjdlm5j2wnikcedulyblv3uhgxfbwi/metadata.json
+5,Ethan Ewing,Australia,ipfs://bafyreihl4vzodlfdp4to4hktqxnanym63v74gh42jwub55c63n6kzwvtva/metadata.json
+6,Ezekiel Lau,Hawaii,ipfs://bafyreigoikyzkzifa4kg3adyt53nlu64b77pvauvvqmu5ljendfm45h2ku/metadata.json
+7,Filipe Toledo,Brazil,ipfs://bafyreias2oxqxzrevahum5llslc62rwxmfaeloksbjvmq67g6tjg4auqlu/metadata.json
+8,Gabriel Medina,Brazil,ipfs://bafyreifdijo4t5kde2kqakncb6wu6pnqhgsqslwqurqoqvwblfsh6lrdhu/metadata.json
+9,Griffin Colapinto,United States,ipfs://bafyreicdaogenltxiyztmkziagfnrybdxdrmuuqvwqypfwjl3ccata554i/metadata.json
+10,Ian Gentil,Hawaii,ipfs://bafyreidx6c6ktdnkp5ynpy4ctov4y5u42y3ssriunnu6toc6n43ravxq2m/metadata.json
+11,Italo Ferreira,Brazil,ipfs://bafyreidnveu4atjk34krkecmsezyp2a7joznuipmqdnyraxhatx4qzhiqm/metadata.json
+12,Jack Robinson,Australia,ipfs://bafyreiacfwda5tdqp3ww5j2us5rukm46dwur7fvclbqgwoips5f46uhf4q/metadata.json
+13,Jackson Baker,Australia,ipfs://bafyreiboehm5mdxguitadjb4xo442ngek5yolna37olmg6pfuosog4hg3m/metadata.json
+14,Jadson Andre,Brazil,ipfs://bafyreie2epdk7rhf2my4qton6sfkrfaplut2yuoj4eudkx6tymahezwb4e/metadata.json
+15,Jake Marshall,United States,ipfs://bafyreidshtui6thi2x7ues5kxynshd2hoizbnunsawxo4hkmpnedoxcqze/metadata.json
+16,Joao Chianca,Brazil,ipfs://bafyreibvta62flvbhtxjmuewmtpsg7n24wcft4gj6vvscqsa772bne5mru/metadata.json
+17,John John Florence,Hawaii,ipfs://bafyreiegwnesuq5rqy3rvto6r5okiadyt7xzkegxcbfu57hbb2lk525vt4/metadata.json
+18,Jordy Smith,South Africa,ipfs://bafyreieuxcpe2vhwlq6mmwbuuvog2ixre4jbgbi7j63z7hzvej4swanili/metadata.json
+19,Kanoa Igarashi,Japan,ipfs://bafyreicbxmwzmp7hxbqzplopgestin4kmbicgr7jaussrgivhzsumheahm/metadata.json
+20,Kelly Slater,United States,ipfs://bafyreif4mvj3omytmakxo7y5gux5xizcbde5bl6hdukvhvkwkiwyk6mbs4/metadata.json
+21,Kolohe Andino,United States,ipfs://bafyreieuqvdi4oys7n67cz5hkny5gbwfsta42v44hjktzkemsxklta5gsq/metadata.json
+22,Leonardo Fioravanti,Italy,ipfs://bafyreibqtytti4jtpaa2noo5ggawzog5asz2dr2wbnkloe4ruirbbudxwa/metadata.json
+23,Liam O'brien,Australia,ipfs://bafyreibyguvpp7ikm73gvyqp7dn267i72vgovicnwhmitbtu6btj3bmcgu/metadata.json
+24,Matthew Mcgillivray,South Africa,ipfs://bafyreice7nkljyq7jyuz4jk3pgmbcjokanszv4gfzht45pjdzyrabqjqba/metadata.json
+25,Maxime Huscenot,France,ipfs://bafyreieztyog4g56zpxf2nuc3ft4i5bmo3sxzwersspmcezpijvvhah7iu/metadata.json
+26,Michael Rodrigues,Brazil,ipfs://bafyreihtjint3pftdofll7ynjjglefryui3hawnjmpnsggawnephvgo2xe/metadata.json
+27,Miguel Pupo,Brazil,ipfs://bafyreigbc46bcf4ueaspoymhoa6ohcmeehdnvgfxqltggv4bewkryh3q5i/metadata.json
+28,Nat Young,United States,ipfs://bafyreigcthn2hgf7bkejniradqinlnprjj42vqj2soz74e2knxco2jmcge/metadata.json
+29,Ramzi Boukhiam,Morocco,ipfs://bafyreic7cnkvf2bz5dijfxpwfom5vm536kvkygdajulmgahsw7zkly2r6a/metadata.json
+30,Rio Waida,Indonesia,ipfs://bafyreigjqavler3ejsdsnnphchaeqkt2bpeokhxw66oy7qhzfra3s5t6fm/metadata.json
+31,Ryan Callinan,Australia,ipfs://bafyreih6v54fzhzs3kiaxrjl4ri7z23uiqkedmxsruaxz7me4ezqmogl2q/metadata.json
+32,Samuel Pupo,Brazil,ipfs://bafyreigzl7ngaramb3aohwyrq5g2msy7pylh2ca2jn35dgczmpnyixt544/metadata.json
+33,Seth Moniz,Hawaii,ipfs://bafyreih5oj7v22cirnbstg7ohlqt2gbr5mriefedhqfmzrmfx3etknnwdq/metadata.json
+34,Yago Dora,Brazil,ipfs://bafyreicbtrid6bnzu5bobjcygg7zt7owqfshpcxfn26kzwebzqcmpvo5pu/metadata.json
