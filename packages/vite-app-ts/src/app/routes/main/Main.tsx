@@ -118,10 +118,9 @@ export const Main: FC = () => {
   const [surferData, setSurferData] = useState<SurferData[]>([]);
   useEffect(() => {
     const updateSurferData = async (): Promise<void> => {
-      const update: SurferData[] = [];
       const numTokens = await nft.totalSupply();
       console.log('Fetching data for this number of surfers: ', numTokens.toNumber());
-      for (let i = 0; i < numTokens.toNumber(); i += 1) {
+      const getSurferData = async (i: number): Promise<SurferData> => {
         const tokenId = await nft.tokenByIndex(i);
         const tokenURI = await nft.tokenURI(tokenId);
         const ownerAddress = await nft.ownerOf(tokenId);
@@ -129,14 +128,15 @@ export const Main: FC = () => {
           name: string;
           image: string;
         };
-        update.push({
+        return {
           name,
           imgUrl: image.replace('ipfs://', 'https://ipfs.io/ipfs/'),
           tokenId: tokenId.toString(),
           ownerAddress,
           isAvailable: ownerAddress === fantasyLeague?.address,
-        });
-      }
+        };
+      };
+      const update = await Promise.all([...new Array(numTokens.toNumber()).fill(1)].map((_, i) => getSurferData(i)));
       setSurferData(update);
     };
     if (nft?.address) updateSurferData().catch((err) => console.error(err));
