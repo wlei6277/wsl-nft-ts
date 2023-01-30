@@ -52,7 +52,9 @@ export const MainPageHeader: FC<IMainPageHeaderProps> = (props) => {
         blockExplorer={props.scaffoldAppProviders.targetNetwork.blockExplorer}
         hasContextConnect={true}
       />
-      <FaucetHintButton scaffoldAppProviders={props.scaffoldAppProviders} gasPrice={gasPrice} />
+      {selectedChainId !== 10 && (
+        <FaucetHintButton scaffoldAppProviders={props.scaffoldAppProviders} gasPrice={gasPrice} />
+      )}
       {props.children}
     </div>
   );

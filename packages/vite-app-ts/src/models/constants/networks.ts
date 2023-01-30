@@ -10,7 +10,8 @@ export type TNetworkNames =
   | 'goerli'
   | 'xdai'
   | 'matic'
-  | 'mumbai';
+  | 'mumbai'
+  | 'optimism';
 
 export const NETWORKS: Record<TNetworkNames, TNetworkInfo> = {
   localhost: {
@@ -88,5 +89,12 @@ export const NETWORKS: Record<TNetworkNames, TNetworkInfo> = {
     rpcUrl: 'https://rpc-mumbai.maticvigil.com',
     faucet: 'https://faucet.matic.network/',
     blockExplorer: 'https://mumbai-explorer.matic.today/',
+  },
+  optimism: {
+    name: 'optimism',
+    color: '#7003DD',
+    chainId: 10,
+    rpcUrl: `https://optimism-mainnet.infura.io/v3/28335438fdf84172aa7211d86c94aee6`,
+    blockExplorer: 'https://optimism.etherscan.io/',
   },
 };
