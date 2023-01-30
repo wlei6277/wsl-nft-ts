@@ -11,14 +11,14 @@ export interface SurfersProps {
   surferData: SurferData[];
   initialPriceUsd: string;
   buySurfer: (tokenId: string) => Promise<void>;
-  nftContractAddress?: string;
+  nftContractAddress: string;
 }
 
 interface SurferProps {
   surfer: SurferData;
   initialPriceUsd: string;
   buySurfer: (tokenId: string) => Promise<void>;
-  nftContractAddress?: string;
+  nftContractAddress: string;
 }
 
 const Surfer: FC<SurferProps> = ({ surfer, buySurfer, initialPriceUsd, nftContractAddress }) => {
@@ -34,9 +34,9 @@ const Surfer: FC<SurferProps> = ({ surfer, buySurfer, initialPriceUsd, nftContra
 
   if (targetNetwork) {
     openseaLink =
-      targetNetwork.name === 'mainnet'
-        ? `https://opensea.io/assets/ethereum/${nftContractAddress}/${tokenId}`
-        : `https://testnets.opensea.io/assets/${targetNetwork}/${nftContractAddress}/${surfer.tokenId}`;
+      targetNetwork.name === 'optimism'
+        ? `https://opensea.io/assets/optimism/${nftContractAddress}/${tokenId}`
+        : `https://testnets.opensea.io/assets/${targetNetwork.name}/${nftContractAddress}/${surfer.tokenId}`;
   }
 
   return (
@@ -66,7 +66,7 @@ const Surfer: FC<SurferProps> = ({ surfer, buySurfer, initialPriceUsd, nftContra
   );
 };
 
-const Surfers: FC<SurfersProps> = ({ surferData, initialPriceUsd, buySurfer }) => {
+const Surfers: FC<SurfersProps> = ({ surferData, initialPriceUsd, buySurfer, nftContractAddress }) => {
   return (
     <Space wrap size="middle" align="center" className="justify-center">
       {surferData[0] ? (
@@ -76,6 +76,7 @@ const Surfers: FC<SurfersProps> = ({ surferData, initialPriceUsd, buySurfer }) =
             key={`nft-${surfer.tokenId}`}
             initialPriceUsd={initialPriceUsd}
             buySurfer={buySurfer}
+            nftContractAddress={nftContractAddress}
           />
         ))
       ) : (
