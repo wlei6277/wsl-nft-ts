@@ -1,7 +1,7 @@
 import { Row, Col, Divider, Button } from 'antd';
 import { useEthersContext } from 'eth-hooks/context';
 import { BigNumber } from 'ethers';
-import { chain, number, divide, subtract } from 'mathjs';
+import { chain, number, divide, subtract, bignumber } from 'mathjs';
 import { FC, useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 import { SurferData } from '../main/Main';
@@ -47,9 +47,9 @@ const Results: FC<ResultsProps> = ({ fantasyRead, weiToUsd, setSettleLeagueModal
           .multiply(percentageOfCompsFinished)
           .done();
 
-        const update = subtract(number(leagueBalanceInWei.toString()), weiForComps);
+        const update = leagueBalanceInWei.sub(weiForComps.toString());
 
-        setChampionWinnings(weiToUsd(BigNumber.from(update)));
+        setChampionWinnings(weiToUsd(update));
       }
     };
 
