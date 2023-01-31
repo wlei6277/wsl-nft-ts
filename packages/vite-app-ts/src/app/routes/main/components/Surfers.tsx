@@ -70,15 +70,18 @@ const Surfers: FC<SurfersProps> = ({ surferData, initialPriceUsd, buySurfer, nft
   return (
     <Space wrap size="middle" align="center" className="justify-center">
       {surferData[0] ? (
-        surferData.map((surfer) => (
-          <Surfer
-            surfer={surfer}
-            key={`nft-${surfer.tokenId}`}
-            initialPriceUsd={initialPriceUsd}
-            buySurfer={buySurfer}
-            nftContractAddress={nftContractAddress}
-          />
-        ))
+        surferData.map(
+          (surfer) =>
+            surfer.tokenId !== '31' && (
+              <Surfer
+                surfer={surfer}
+                key={`nft-${surfer.tokenId}`}
+                initialPriceUsd={initialPriceUsd}
+                buySurfer={buySurfer}
+                nftContractAddress={nftContractAddress}
+              />
+            )
+        )
       ) : (
         <Spin tip="Loading surfers...." size="large" />
       )}
