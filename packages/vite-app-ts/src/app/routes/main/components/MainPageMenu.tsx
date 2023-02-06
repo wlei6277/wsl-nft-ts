@@ -23,13 +23,22 @@ export const MainPageMenu: FC<IMainPageMenuProps> = (props) => (
         Surfers
       </Link>
     </Menu.Item>
-    <Menu.Item key="/events">
+    <Menu.Item key="/how">
       <Link
         onClick={() => {
-          props.setRoute('/events');
+          props.setRoute('/how');
         }}
-        to="/results">
-        Results
+        to="/how">
+        How to Play
+      </Link>
+    </Menu.Item>
+    <Menu.Item key="/money">
+      <Link
+        onClick={() => {
+          props.setRoute('/money');
+        }}
+        to="/money">
+        Money
       </Link>
     </Menu.Item>
     <Menu.Item key="/mainnetdai">

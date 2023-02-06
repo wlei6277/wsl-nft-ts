@@ -28,6 +28,7 @@ import { useDebounce } from 'use-debounce';
 
 import Surfers from './components/Surfers';
 import Results from '../results/Results';
+import Info from '../how-to-play/Info';
 import SettledLeagueMessage from './components/SettledLeagueMessage';
 
 import { WSLNFT, WSLFantasyLeague } from '../../../generated/contract-types';
@@ -223,7 +224,10 @@ export const Main: FC = () => {
                     nftContractAddress={nft.address}
                   />
                 </Route>
-                <Route exact path="/results">
+                <Route exact path="/how">
+                  <Info />
+                </Route>
+                <Route exact path="/money">
                   <Results
                     fantasyRead={fantasyLeague}
                     weiToUsd={(wei: BigNumber): string => weiToUsd(wei, ethPrice)}
