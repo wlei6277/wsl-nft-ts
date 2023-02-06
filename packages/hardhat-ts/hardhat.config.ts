@@ -10,6 +10,7 @@ import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-ethers';
 import '@tenderly/hardhat-tenderly';
 import 'hardhat-deploy';
+import '@nomiclabs/hardhat-etherscan';
 // not required as we are using @nomiclabs/hardhat-ethers@npm:hardhat-deploy-ethers
 import { SurferData, parseSurfers } from './helpers/parseSurferCsv';
 // import 'solidity-coverage';
@@ -172,8 +173,10 @@ const config: HardhatUserConfig = {
     outDir: '../vite-app-ts/src/generated/contract-types',
   },
   etherscan: {
-    // Add your api key here
-    apiKey: '3XENY6ZT5911CFWCC2JNQQZR1QNDV5V3TQ',
+    // @ts-ignore
+    apiKey: {
+      optimisticEthereum: process.env.OPTIMISTIC_ETHERUEM_ETHERSCAN_KEY,
+    },
   },
 };
 export default config;
