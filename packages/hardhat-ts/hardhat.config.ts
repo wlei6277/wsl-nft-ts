@@ -4,7 +4,7 @@
 // This adds support for typescript paths mappings
 import "tsconfig-paths/register";
 
-import { Signer, utils } from "ethers";
+import { ContractTransaction, Signer, utils } from "ethers";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-ethers";
@@ -462,7 +462,7 @@ task("mint-missing-surfers", "mint the missing surfers").setAction(
         .on("end", () => resolve(surferData))
         .on("error", (error: any) => reject(error));
     });
-    const promises = [];
+    const promises: ContractTransaction[] = [];
     console.log("Minting surfers here we go!!!!");
     for (let i = 0; i < surferData.length; i += 1) {
       const { name, ipfsUrl } = surferData[i];
