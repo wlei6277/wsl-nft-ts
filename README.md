@@ -8,7 +8,7 @@ The game works by minting an NFT for each of the surfers and transferring the ow
 
 If you're interested in this project, run the app, open a new command prompt terminal and:
 
-# in a new terminal
+# How to run this repo
 
 # compile your contracts
 
