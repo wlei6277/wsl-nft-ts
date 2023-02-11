@@ -6,9 +6,6 @@ import { ContractTransaction } from "ethers";
 const fs = require("fs");
 const path = require("path");
 
-const { NFTStorage, File } = require("nft.storage");
-const voca = require("voca");
-
 const { parseSurfers } = require("../helpers/parseSurferCsv");
 
 const dotenv = require("dotenv");
