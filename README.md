@@ -1,45 +1,25 @@
-# 🏗👷🏾 Scaffold-ETH Challenges
+What is the game?
 
-> learn how to use 🏗 scaffold-eth to create decentralized applications on Ethereum. 🚀
+This is a game of sports trading cards run on the ethereum block chain. Buy a surfer and the proceeds will transferred into a pot of money. You win prize money if your surfer is the overall champion at the end of the season (~50% of the total pot) OR if your surfer places 1st, 2nd or 3rd in one of the 10 competitions. If someone already owns a surfer you can make them an offer and if they accept you will receive the prize money earned by that surfer.
 
----
+How does it work?
 
-## 🚩 Challenge 0: 🎟 Simple NFT Example 🤓
+The game works by minting an NFT for each of the surfers and transferring the ownership of the newly minted NFTs to the `WSLFantasyLeague` (WSL stands for World Surf League) contract. Users can then buy the surfers from the league which stores it's balance as available prize money. Upon the finalisation of each WSL competition the deployer calls the settleCompetition function picking 1st, 2nd and 3rd. The contract calculates the appropriate amount of prize money for each place and then distributes this to the owner of the surfer which placed (if the leauge still owns the NFT no money is transferred). Once all competitions have been settled there will be a champion and the league owner calls settleLeague. If someone owns the champ then all of the remaining balance in the league is transferred to them, otherwise the balance is redistributed evenly back amongst each of the players.
 
-🎫 Create a simple NFT to learn basics of 🏗 scaffold-eth. You'll use 👷‍♀️ HardHat to compile and deploy smart contracts. Then, you'll use a template React app full of important Ethereum components and hooks. Finally, you'll deploy an NFT to a public network to share with friends! 🚀
+If you're interested in this project, run the app, open a new command prompt terminal and:
 
-https://github.com/scaffold-eth/scaffold-eth-typescript-challenges/tree/challenge-0-simple-nft
+# in a new terminal
 
----
+# compile your contracts
 
-## 🚩 Challenge 1: 🥩 Decentralized Staking App
+yarn compile
 
-🦸 A superpower of Ethereum is allowing you, the builder, to create a simple set of rules that an adversarial group of players can use to work together. In this challenge, you create a decentralized application where users can coordinate a group funding effort. If the users cooperate, the money is collected in a second smart contract. If they defect, the worst that can happen is everyone gets their money back. The users only have to trust the code.
+# deploy your hardhat contracts
 
-https://github.com/scaffold-eth/scaffold-eth-typescript-challenges/tree/challenge-1-decentralized-staking
+yarn deploy
 
----
+# start the react app (vite)
 
-## 🚩 Challenge 2: 🏵 Token Vendor 🤖
+yarn start
 
-🤖 Smart contracts are kind of like "always on" vending machines that anyone can access. Let's make a decentralized, digital currency. Then, let's build an unstoppable vending machine that will buy and sell the currency. We'll learn about the "approve" pattern for ERC20s and how contract to contract interactions work.
-
-https://github.com/scaffold-eth/scaffold-eth-typescript-challenges/tree/challenge-2-token-vendor
-
----
-
-## 🚩 Challenge 3: 🎲 Dice Game
-
-🎰 Randomness is tricky on a public deterministic blockchain.  In this challenge you will explore creating random numbers using block hash and how that may be exploitable.  Attack the dice game with your own contract by predicting the randomness ahead of time to always roll a winner!
-
-https://github.com/scaffold-eth/scaffold-eth-typescript-challenges/tree/challenge-3-dice-game
-
----
-
-### 💬 Support Chat
-
-Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA) to ask questions and find others building with 🏗 scaffold-eth!
-
----
-
-🙏 Please check out our [Gitcoin grant](https://gitcoin.co/grants/2851/scaffold-eth) too!
+This will deploy both the NFT and WSLFantasyLeague contracts, initialise the league by minting and transferring each of the surfers and spin a local development server for you interact with the league.
