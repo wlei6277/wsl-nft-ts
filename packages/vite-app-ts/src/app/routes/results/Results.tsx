@@ -1,7 +1,6 @@
 import { Row, Col, Divider, Button } from 'antd';
 import { useEthersContext } from 'eth-hooks/context';
 import { BigNumber } from 'ethers';
-import { chain, number, divide, subtract, bignumber } from 'mathjs';
 import { FC, useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 import { SurferData } from '../main/Main';
@@ -32,23 +31,12 @@ const Results: FC<ResultsProps> = ({ fantasyRead, weiToUsd, setSettleLeagueModal
   useEffect(() => {
     const updateChampionWinnings = async (): Promise<void> => {
       const shareForComps = await fantasyRead.COMPETITION_SHARE();
-      const numComps = await fantasyRead.NUM_COMPETITIONS();
-      const numUnsettledCompetitions = await fantasyRead.numUnsettledCompetitions();
-      const leagueBalanceInWei = await ethersAppContext.library?.getBalance(fantasyRead.address);
-      const compsPercentage = divide(number(shareForComps.toString()), 10000);
-      const percentageOfCompsFinished = divide(
-        number(numUnsettledCompetitions.toString()),
-        number(numComps.toString())
-      );
-      if (leagueBalanceInWei) {
-        setTotalPrizeMoneyUsd(weiToUsd(leagueBalanceInWei));
-        const weiForComps = chain(number(leagueBalanceInWei.toString()))
-          .multiply(compsPercentage)
-          .multiply(percentageOfCompsFinished)
-          .done();
+      const potInWei = await fantasyRead.pot();
 
-        const update = leagueBalanceInWei.sub(weiForComps.toString());
-
+      if (potInWei) {
+        setTotalPrizeMoneyUsd(weiToUsd(potInWei));
+        const weiForComps = potInWei.mul(shareForComps).div(10000);
+        const update = potInWei.sub(weiForComps);
         setChampionWinnings(weiToUsd(update));
       }
     };
