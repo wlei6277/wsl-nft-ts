@@ -41,9 +41,13 @@ contract WSLFantasyLeague is Ownable {
     _;
   }
 
+  receive() external payable {
+    pot += msg.value;
+  }
+
   function calculateCompetitionWinnings() public view returns (uint256 firstsWinnings, uint256 secondsWinnings, uint256 thirdsWinnings) {
     uint256 normaliser = 10000;
-    uint256 competitionWinnings = (pot.mul(COMPETITION_SHARE).div(normaliser)).div(NUM_COMPETITIONS);
+    uint256 competitionWinnings = (pot.mul(COMPETITION_SHARE).div(NUM_COMPETITIONS)).div(normaliser);
 
     return (
       competitionWinnings.mul(SHARE_FOR_FIRST).div(normaliser),
