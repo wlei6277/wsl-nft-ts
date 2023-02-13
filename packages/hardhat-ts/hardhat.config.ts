@@ -489,6 +489,16 @@ task("mint-missing-surfers", "mint the missing surfers").setAction(
   }
 );
 
+// task("send-contract", "Send ETH to contract")
+//   .addParam("from", "From address or account index")
+//   .addOptionalParam("to", "Contract address")
+//   .addOptionalParam("amount", "Amount to send in ether")
+//   .setAction(async (taskArgs, { network, ethers }) => {
+//     const { to } = taskArgs;
+//     const contract = await ethers.getContractAt('WSLFantasyLeague', to);
+//     return contract.call{}()
+//   })
+
 task("send", "Send ETH")
   .addParam("from", "From address or account index")
   .addOptionalParam("to", "To address or account index")
