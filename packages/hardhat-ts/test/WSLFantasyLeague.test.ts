@@ -424,18 +424,21 @@ describe("WSLFantasyLeague", function () {
     });
     it("SendEthToContract", async () => {
       const factory = await ethers.getContractFactory("SendEthToContract");
-      const sendFactory = await factory.deploy();
       const leagueBalanceBefore = await getLeagueBalance();
-      const tx = await sendFactory.transferToContract(
+      const sendContract = await factory.deploy(
         wslFantasyLeagueContract.address,
         { value: ethers.utils.parseEther("1") }
       );
-      await tx.wait();
+
       const leagueBalanceAfter = await getLeagueBalance();
       console.log({
         before: weiToAud(leagueBalanceBefore),
         after: weiToAud(leagueBalanceAfter),
       });
+      const sendBalance = await ethers.provider.getBalance(
+        sendContract.address
+      );
+      console.log("Send balance", weiToAud(sendBalance));
     });
   });
 });
