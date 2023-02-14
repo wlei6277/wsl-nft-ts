@@ -6,7 +6,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironmentExtended) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const { address: nftContractAddress } = await hre.deployments.get(
+  const { address: fantasyLeagueAddress } = await hre.deployments.get(
     "WSLFantasyLeague"
   );
 
@@ -14,6 +14,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironmentExtended) => {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
     log: true,
+    args: [fantasyLeagueAddress],
+    value: ethers.utils.parseEther("1"),
   });
 };
 export default func;
