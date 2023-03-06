@@ -15,6 +15,12 @@ contract WSLFantasyLeague is Ownable {
   event LeagueSettled(uint256 championTokenId);
 
   WSLNFT public wslNFT;
+  struct Player {
+    string name;
+    string phone;
+    string email;
+  }
+
   uint256 public constant INITIAL_PRICE = 0.005 ether;
   uint256 public constant COMPETITION_SHARE = 5000;
   uint256 public constant NUM_COMPETITIONS = 10;
@@ -23,6 +29,7 @@ contract WSLFantasyLeague is Ownable {
   uint256 public constant SHARE_FOR_FIRST = 5000;
   uint256 public constant SHARE_FOR_SECOND = 3000;
   uint256 public constant SHARE_FOR_THIRD = 2000;
+  mapping(address => Player) public players;
   bool public hasBeenSettled;
 
   constructor(address nftContractAddress) {
@@ -56,6 +63,10 @@ contract WSLFantasyLeague is Ownable {
     );
   }
 
+  function addPlayer(address playerAddress, Player memory player) public isLive {
+    players[playerAddress] =  player;
+  }
+
   function buySurfer(uint256 tokenId) public payable isLive {
     require(msg.value == INITIAL_PRICE, "Incorrect payment amount");
     require(wslNFT.ownerOf(tokenId) == address(this), "Surfer has already been bought");
@@ -85,19 +96,19 @@ contract WSLFantasyLeague is Ownable {
     // No one owns the champion distribute the league balance amongst all of the players
     if (championOwner == address(this)) {
       uint256 numBoughtSurfers = 0;
-      address[] memory players = new address[](wslNFT.totalSupply());
+      address[] memory playersToRefund = new address[](wslNFT.totalSupply());
       uint balanceToDistribute = address(this).balance;
       for (uint256 i = 0; i < wslNFT.totalSupply(); i += 1) {
         address player = wslNFT.ownerOf(wslNFT.tokenByIndex(i));
         if (player != address(this)) {
           numBoughtSurfers += 1;
-          players[i] = player;
+          playersToRefund[i] = player;
         }
       }
 
       for (uint256 i = 0; i < wslNFT.totalSupply(); i += 1) {
-        if (players[i] != address(0)) {
-          payable(players[i]).transfer(balanceToDistribute / numBoughtSurfers);
+        if (playersToRefund[i] != address(0)) {
+          payable(playersToRefund[i]).transfer(balanceToDistribute / numBoughtSurfers);
         }
       }
     } else {
