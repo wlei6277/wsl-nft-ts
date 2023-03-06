@@ -16,6 +16,7 @@ describe('WSLFantasyLeague', function () {
   let wslFantasyLeagueContract: Contract;
   let initialSurferPrice: BigNumber;
   let numComps: number;
+  let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
   let user3: SignerWithAddress;
@@ -74,7 +75,9 @@ describe('WSLFantasyLeague', function () {
     console.log('\t', 'Contracts deployed');
     initialSurferPrice = await wslFantasyLeagueContract.INITIAL_PRICE();
     numComps = (await wslFantasyLeagueContract.NUM_COMPETITIONS()).toNumber();
-    const [_deployer, u1, u2, u3, u4] = await ethers.getSigners();
+    const [deployerAcc, u1, u2, u3, u4] = await ethers.getSigners();
+    //@ts-ignore
+    deployer = deployerAcc;
     //@ts-ignore
     user1 = u1;
     //@ts-ignore
@@ -83,6 +86,51 @@ describe('WSLFantasyLeague', function () {
     user3 = u3;
     //@ts-ignore
     user4 = u4;
+  });
+
+  describe('addPlayer()', function () {
+    const addBilly = async (options: { name?: string; email?: string; phone?: string } = {}, address = deployer.address) => {
+      const player = { ...{ name: 'billy', email: 'wlei6277@gmail.com', phone: '0419208400' }, ...options };
+      console.log('Adding player ', player);
+      const tx = await wslFantasyLeagueContract.addPlayer(address, player);
+      await tx.wait();
+      console.log('player added successfully');
+    };
+    it('can add a player without all values', async function () {
+      const [deployer] = await ethers.getSigners();
+      await addBilly({ phone: '' });
+      const player = await wslFantasyLeagueContract.players(deployer.address);
+      console.log(player);
+    });
+    it('can add a player', async function () {
+      const [deployer] = await ethers.getSigners();
+      await addBilly();
+      const player = await wslFantasyLeagueContract.players(deployer.address);
+      expect(player.name).to.equal('billy');
+      expect(player.email).to.equal('wlei6277@gmail.com');
+      expect(player.phone).to.equal('0419208400');
+    });
+    it('can update a player', async function () {
+      const [deployer] = await ethers.getSigners();
+      await addBilly();
+      const player = await wslFantasyLeagueContract.players(deployer.address);
+      expect(player.name).to.equal('billy');
+      expect(player.email).to.equal('wlei6277@gmail.com');
+      expect(player.phone).to.equal('0419208400');
+      await addBilly({ email: 'billyjamesleitch@hotmail.com' });
+      const updatedPlayer = await wslFantasyLeagueContract.players(deployer.address);
+      expect(updatedPlayer.name).to.equal('billy');
+      expect(updatedPlayer.email).to.equal('billyjamesleitch@hotmail.com');
+      expect(updatedPlayer.phone).to.equal('0419208400');
+    });
+    it('supports multiple players', async function () {
+      await addBilly();
+      await addBilly({ name: 'user1' }, user1.address);
+      const deployerPlayer = await wslFantasyLeagueContract.players(deployer.address);
+      const user1Player = await wslFantasyLeagueContract.players(user1.address);
+      const notCreated = await wslFantasyLeagueContract.players(user2.address);
+      console.log('Users: ', { deployerPlayer, user1Player, notCreated });
+    });
   });
 
   describe('buySurfer()', function () {
