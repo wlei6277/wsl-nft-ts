@@ -35,12 +35,18 @@ import { WSLNFT, WSLFantasyLeague } from '../../../generated/contract-types';
 
 export const DEBUG = false;
 
+export interface Player {
+  name: string;
+  email: string;
+  phone: string;
+}
 export interface SurferData {
   tokenId: string;
   name: string;
   imgUrl: string;
   ownerAddress: string;
   isAvailable: boolean;
+  owner: Player;
 }
 
 export const Main: FC = () => {
@@ -129,15 +135,18 @@ export const Main: FC = () => {
           name: string;
           image: string;
         };
+        const owner = await fantasyLeague.players(ownerAddress);
         return {
           name,
           imgUrl: image.replace('ipfs://', 'https://ipfs.io/ipfs/'),
           tokenId: tokenId.toString(),
           ownerAddress,
           isAvailable: ownerAddress === fantasyLeague?.address,
+          owner,
         };
       };
       const update = await Promise.all([...new Array(numTokens.toNumber()).fill(1)].map((_, i) => getSurferData(i)));
+      console.log('Setting surfer data ', update);
       setSurferData(update);
     };
     if (nft?.address) updateSurferData().catch((err) => console.error(err));
@@ -213,8 +222,8 @@ export const Main: FC = () => {
         <Switch>
           <section className="p-10 h-full w-full">
             {!hasLoadedContracts && <Spin tip="Loading contracts....." size="large" />}
-            {hasLoadedContracts && !isLive && <SettledLeagueMessage />}
-            {hasLoadedContracts && isLive && (
+            {/* {hasLoadedContracts && !isLive && <SettledLeagueMessage />} */}
+            {hasLoadedContracts && (
               <>
                 <Route exact path="/">
                   <Surfers
