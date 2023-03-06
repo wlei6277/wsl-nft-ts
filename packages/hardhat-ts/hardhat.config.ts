@@ -23,6 +23,8 @@ import { Provider, TransactionRequest } from '@ethersproject/providers';
 import { HardhatUserConfig, task } from 'hardhat/config';
 import { HttpNetworkUserConfig } from 'hardhat/types';
 import { TEthers } from '../hardhat-ts/helpers/types/hardhat-type-extensions';
+import { WSLNFT } from '../../packages/vite-app-ts/src/generated/contract-types/WSLNFT';
+import { WSLFantasyLeague } from '../../packages/vite-app-ts/src/generated/contract-types/WSLFantasyLeague';
 
 declare module 'hardhat/types/runtime' {
   // This is an example of an extension to the Hardhat Runtime Environment.
@@ -76,16 +78,16 @@ const config: HardhatUserConfig = {
         if there is no mnemonic, it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)
       */
-      // accounts: {
-      //   mnemonic: getMnemonic(),
-      //   accountsBalance: "10000000000000000000",
-      // },
+      accounts: {
+        mnemonic: getMnemonic(),
+        accountsBalance: '10000000000000000000',
+      },
     },
     hardhat: {
-      // accounts: {
-      //   mnemonic: getMnemonic(),
-      //   accountsBalance: "10000000000000000000",
-      // },
+      accounts: {
+        mnemonic: getMnemonic(),
+        accountsBalance: '10000000000000000000',
+      },
     },
     rinkeby: {
       url: 'https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad', // <---- YOUR INFURA ID! (or it won't work)
@@ -194,6 +196,15 @@ task('wallet', 'Create a wallet (pk) link', async (_, { ethers }) => {
   console.log(`🔐 WALLET Generated as ${randomWallet.address}`);
   console.log(`🔗 http://localhost:3000/pk#${privateKey}`);
 });
+
+task('test-contract')
+  .addParam('address')
+  .setAction(async ({ address }, { ethers }) => {
+    const contract = await ethers.getContractAt<WSLFantasyLeague>('WSLFantasyLeague', address);
+    const numComps = await contract.NUM_COMPETITIONS();
+    const balance = await ethers.provider.getBalance(address);
+    console.log(`Contract address ${address} is alive with ${numComps} competitions left and a balance of ${balance}`);
+  });
 
 task('fundedwallet', 'Create a wallet (pk) link and fund it with deployer?')
   .addOptionalParam('amount', 'Amount of ETH to send to wallet after generating')
@@ -356,6 +367,147 @@ const findFirstAddr = async (ethers: TEthers, addr: string) => {
   }
   throw `Could not normalize address: ${addr}`;
 };
+
+task('add-player', 'Add a player to the league')
+  .addParam('address', 'the address of the player')
+  .addParam('name', 'name of the player')
+  .addOptionalParam('email', 'email of the player')
+  .addOptionalParam('phone', 'phone number of the player')
+  .setAction(async ({ address, ...player }, { ethers, deployments, getNamedAccounts }) => {
+    const { address: leagueAddress } = await deployments.get('WSLFantasyLeague');
+    const league = await ethers.getContractAt<WSLFantasyLeague>('WSLFantasyLeague', leagueAddress);
+    const tx = await league.addPlayer(address, player);
+    await tx.wait();
+    const newPlayer = await league.players(address);
+    console.log('Player added with the following params ', newPlayer);
+  });
+
+task('transfer-league', 'Transfer surfers which havent been bought yet to another league')
+  .addParam('address', 'Address of the old league')
+  .setAction(async (taskArgs, { ethers, deployments, getNamedAccounts }) => {
+    const { address: oldLeagueAddress } = taskArgs;
+    const { deployer } = await getNamedAccounts();
+    const deployerBalancePreSettle = await ethers.provider.getBalance(deployer);
+    const { address: nftContractAddress } = await deployments.get('WSLNFT');
+    const nftContract = await ethers.getContractAt<WSLNFT>('WSLNFT', nftContractAddress);
+
+    const { address: newLeagueAddress } = await deployments.get('WSLFantasyLeague');
+    console.log('New league is at ', newLeagueAddress);
+    const newContract = await ethers.getContractAt<WSLFantasyLeague>('WSLFantasyLeague', newLeagueAddress);
+
+    console.log('Fetching old contract at ', oldLeagueAddress);
+    const oldContract = await ethers.getContractAt<WSLFantasyLeague>('WSLFantasyLeague', oldLeagueAddress);
+
+    const oldLeagueBalance = await ethers.provider.getBalance(oldLeagueAddress);
+    const newLeagueBalance = await ethers.provider.getBalance(newLeagueAddress);
+    console.log(`Before the transfer here are the balances `, {
+      oldLeagueBalance: oldLeagueBalance.toString(),
+      newLeagueBalance: newLeagueBalance.toString(),
+    });
+    console.log('Transferring over league');
+
+    await nftContract.setApprovalForAll(newLeagueAddress, true);
+
+    const initPrice = await oldContract.INITIAL_PRICE();
+
+    const transfer = async (tokenId: string) => {
+      console.log(`Transferring surfer from ${deployer} to ${newLeagueAddress}`);
+      const transferTx = await nftContract.transferFrom(deployer, newLeagueAddress, tokenId);
+      await transferTx.wait();
+    };
+
+    // Buy all the available surfers and transfer the pot to the new league
+    // These surfers will be transferred over to the new league and will win comps so that the pot is taken over
+    const boughtSurfers: string[] = [];
+    console.log('Starting transfers from the old to the new league');
+    const numSurfers = (await nftContract.totalSupply()).toNumber();
+    for (let i = 0; i < numSurfers; i += 1) {
+      const tokenId = await nftContract.tokenByIndex(i);
+      const ownerAddress = await nftContract.ownerOf(tokenId);
+      if (ownerAddress === oldLeagueAddress) {
+        console.log('Buying surfer ', tokenId);
+        const buyTx = await oldContract.buySurfer(tokenId, { value: initPrice.toString() });
+        await buyTx.wait();
+        boughtSurfers.push(tokenId.toString());
+      } else {
+        // console.log('Not transferring surfer ', { tokenId: tokenId.toNumber(), ownerAddress });
+      }
+    }
+    const { length: numBoughtSurfers } = boughtSurfers;
+    if (numBoughtSurfers < 3) throw new Error('Less than 3 surfers bought!');
+
+    const numCompsUnsettledOld = await oldContract.numUnsettledCompetitions();
+    const [champ, second, third] = boughtSurfers;
+    console.log('These are the surfer tokenIds we will use to take over the balance to the new league ', {
+      champ: { token: champ, owner: await nftContract.ownerOf(champ) },
+      second: { token: second, owner: await nftContract.ownerOf(second) },
+      third: { token: third, owner: await nftContract.ownerOf(third) },
+    });
+    for (let i = 0; i < numCompsUnsettledOld.toNumber(); i += 1) {
+      console.log('Settling comp');
+      await oldContract.settleCompetition(champ, second, third);
+    }
+
+    console.log('Settling league!!');
+    await oldContract.settleLeague(champ);
+
+    console.log('League all settled');
+    const deployerBalancePostSettle = await ethers.provider.getBalance(deployer);
+    const balanceGainedFromSettling = deployerBalancePostSettle.sub(deployerBalancePreSettle);
+    console.log('Deployer balances: ', {
+      preSettle: ethers.utils.formatEther(deployerBalancePreSettle),
+      postSettle: ethers.utils.formatEther(deployerBalancePostSettle),
+      difference: balanceGainedFromSettling.toString(),
+    });
+
+    console.log('Transferring settled balance to new league');
+
+    await newContract.fallback({ value: balanceGainedFromSettling });
+
+    console.log('League settled transferring ownership of surfers to new league');
+    for (let i = 0; i < numBoughtSurfers; i += 1) {
+      await transfer(boughtSurfers[i]);
+    }
+
+    const oldLeagueBalancePost = await ethers.provider.getBalance(oldLeagueAddress);
+    const newLeagueBalancePost = await ethers.provider.getBalance(newLeagueAddress);
+    console.log(`After the transfer here are the balances `, {
+      oldLeagueBalancePost: ethers.utils.formatEther(oldLeagueBalancePost),
+      newLeagueBalancePost: ethers.utils.formatEther(newLeagueBalancePost),
+    });
+
+    console.log('Has old league settled? ', await oldContract.hasBeenSettled());
+  });
+
+// task('transfer-available-surfers', 'Transfer surfers which havent been bought yet to another league', async (_, { ethers, deployments }) => {
+//   const { address: nftContractAddress } = await deployments.get('WSLNFT');
+//   const nftContract = await ethers.getContractAt('WSLNFT', nftContractAddress);
+
+//   const { address: newLeagueAddress } = await deployments.get('WSLFantasyLeague');
+//   const oldLeagueAddress = '0x02883c45E9DEEA574F20147a23027feE7Bc69db5';
+//   const oldContract = await ethers.getContractAt('WSLFantasyLeague', oldLeagueAddress);
+
+//   // await nftContract.connect(oldContract.signer).setApprovalForAll(newLeagueAddress, true);
+
+//   const transfer = async (tokenId: string) => {
+//     const approveTx = await nftContract.connect(oldContract.signer).approve(newLeagueAddress, tokenId);
+//     await approveTx.wait();
+//     const transferTx = await nftContract.transferFrom(oldLeagueAddress, newLeagueAddress, tokenId);
+//     await transferTx.wait();
+//   };
+//   console.log('Starting transfer');
+//   const numSurfers = await nftContract.totalSupply();
+//   for (let i = 0; i < numSurfers; i += 1) {
+//     const tokenId = await nftContract.tokenByIndex(i);
+//     const ownerAddress = await nftContract.ownerOf(tokenId);
+//     if (ownerAddress === oldLeagueAddress) {
+//       console.log('Transferring surfer ', tokenId.toNumber());
+//       await transfer(tokenId);
+//     } else {
+//       console.log('Not transferring surfer ', { tokenId: tokenId.toNumber(), ownerAddress });
+//     }
+//   }
+// });
 
 task('accounts', 'Prints the list of accounts', async (_, { ethers }) => {
   const accounts = await ethers.provider.listAccounts();
