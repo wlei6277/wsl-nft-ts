@@ -28,43 +28,47 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironmentExtended) => {
     log: true,
   });
 
-  const surferParser = parseSurfers();
+  const mintSurfers = true;
 
-  // Read surfers data from CSV
-  console.log('Reading csv data');
-  const surferData = await new Promise<SurferData[]>((resolve, reject) => {
-    const surferData: SurferData[] = [];
-    return fs
-      .createReadStream(SURFER_CSV_PATH)
-      .pipe(surferParser)
-      .on('data', (chunk: { Name: string; Country: string; Url: string }) => {
-        surferData.push({
-          name: chunk.Name,
-          country: chunk.Country,
-          ipfsUrl: chunk.Url,
-        });
-        console.log('Surfer: ', chunk);
+  if (mintSurfers) {
+    const surferParser = parseSurfers();
+
+    // Read surfers data from CSV
+    console.log('Reading csv data');
+    const surferData = await new Promise<SurferData[]>((resolve, reject) => {
+      const surferData: SurferData[] = [];
+      return fs
+        .createReadStream(SURFER_CSV_PATH)
+        .pipe(surferParser)
+        .on('data', (chunk: { Name: string; Country: string; Url: string }) => {
+          surferData.push({
+            name: chunk.Name,
+            country: chunk.Country,
+            ipfsUrl: chunk.Url,
+          });
+          console.log('Surfer: ', chunk);
+        })
+        .on('end', () => resolve(surferData))
+        .on('error', (error: any) => reject(error));
+    });
+
+    const promises: ContractTransaction[] = [];
+    console.log('Minting surfers here we go!!!!');
+    for (let i = 0; i < surferData.length; i += 1) {
+      const { name, ipfsUrl } = surferData[i];
+      console.log(`Minting ${name} with tokenUri ${ipfsUrl}`);
+      const tx = await nftContract.mintItem(fantasyLeagueContract.address, ipfsUrl.replace('ipfs://', ''));
+      promises.push(tx);
+    }
+
+    console.log('Waiting for transactions to finish......');
+
+    await Promise.all(
+      promises.map(async (transaction) => {
+        const tx = await transaction.wait();
       })
-      .on('end', () => resolve(surferData))
-      .on('error', (error: any) => reject(error));
-  });
-
-  const promises: ContractTransaction[] = [];
-  console.log('Minting surfers here we go!!!!');
-  for (let i = 0; i < surferData.length; i += 1) {
-    const { name, ipfsUrl } = surferData[i];
-    console.log(`Minting ${name} with tokenUri ${ipfsUrl}`);
-    const tx = await nftContract.mintItem(fantasyLeagueContract.address, ipfsUrl.replace('ipfs://', ''));
-    promises.push(tx);
+    );
   }
-
-  console.log('Waiting for transactions to finish......');
-
-  await Promise.all(
-    promises.map(async (transaction) => {
-      const tx = await transaction.wait();
-    })
-  );
 
   console.log('Congratulations the league has been deployed, let the games begin!');
 };
