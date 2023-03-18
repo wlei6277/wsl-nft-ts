@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable import/order */
+/* eslint-disable no-underscore-dangle */
 // This adds support for typescript paths mappings
 import 'tsconfig-paths/register';
 
@@ -437,7 +437,7 @@ task('transfer-league', 'Transfer surfers which havent been bought yet to anothe
       const tokenId = await nftContract.tokenByIndex(i);
       const ownerAddress = await nftContract.ownerOf(tokenId);
       if (ownerAddress === oldLeagueAddress) {
-        console.log('Buying surfer ', tokenId);
+        console.log('Buying surfer ', tokenId.toString());
         const buyTx = await oldContract.buySurfer(tokenId, { value: initPrice.toString() });
         await buyTx.wait();
         boughtSurfers.push(tokenId.toString());
@@ -456,7 +456,7 @@ task('transfer-league', 'Transfer surfers which havent been bought yet to anothe
       third: { token: third, owner: await nftContract.ownerOf(third) },
     });
     for (let i = 0; i < numCompsUnsettledOld.toNumber(); i += 1) {
-      console.log('Settling comp');
+      console.log('Settling comp ', i);
       await oldContract.settleCompetition(champ, second, third);
     }
 
@@ -490,36 +490,6 @@ task('transfer-league', 'Transfer surfers which havent been bought yet to anothe
 
     console.log('Has old league settled? ', await oldContract.hasBeenSettled());
   });
-
-// task('transfer-available-surfers', 'Transfer surfers which havent been bought yet to another league', async (_, { ethers, deployments }) => {
-//   const { address: nftContractAddress } = await deployments.get('WSLNFT');
-//   const nftContract = await ethers.getContractAt('WSLNFT', nftContractAddress);
-
-//   const { address: newLeagueAddress } = await deployments.get('WSLFantasyLeague');
-//   const oldLeagueAddress = '0x02883c45E9DEEA574F20147a23027feE7Bc69db5';
-//   const oldContract = await ethers.getContractAt('WSLFantasyLeague', oldLeagueAddress);
-
-//   // await nftContract.connect(oldContract.signer).setApprovalForAll(newLeagueAddress, true);
-
-//   const transfer = async (tokenId: string) => {
-//     const approveTx = await nftContract.connect(oldContract.signer).approve(newLeagueAddress, tokenId);
-//     await approveTx.wait();
-//     const transferTx = await nftContract.transferFrom(oldLeagueAddress, newLeagueAddress, tokenId);
-//     await transferTx.wait();
-//   };
-//   console.log('Starting transfer');
-//   const numSurfers = await nftContract.totalSupply();
-//   for (let i = 0; i < numSurfers; i += 1) {
-//     const tokenId = await nftContract.tokenByIndex(i);
-//     const ownerAddress = await nftContract.ownerOf(tokenId);
-//     if (ownerAddress === oldLeagueAddress) {
-//       console.log('Transferring surfer ', tokenId.toNumber());
-//       await transfer(tokenId);
-//     } else {
-//       console.log('Not transferring surfer ', { tokenId: tokenId.toNumber(), ownerAddress });
-//     }
-//   }
-// });
 
 task('accounts', 'Prints the list of accounts', async (_, { ethers }) => {
   const accounts = await ethers.provider.listAccounts();
