@@ -17,8 +17,6 @@ contract WSLFantasyLeague is Ownable {
   WSLNFT public wslNFT;
   struct Player {
     string name;
-    string phone;
-    string email;
   }
 
   uint256 public constant INITIAL_PRICE = 0.005 ether;

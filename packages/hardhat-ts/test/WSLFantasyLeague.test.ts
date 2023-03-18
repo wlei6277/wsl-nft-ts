@@ -89,39 +89,28 @@ describe('WSLFantasyLeague', function () {
   });
 
   describe('addPlayer()', function () {
-    const addBilly = async (options: { name?: string; email?: string; phone?: string } = {}, address = deployer.address) => {
-      const player = { ...{ name: 'billy', email: 'wlei6277@gmail.com', phone: '0419208400' }, ...options };
-      console.log('Adding player ', player);
+    const addBilly = async (options: { name?: string } = {}, address = deployer.address) => {
+      const player = { ...{ name: 'billy' }, ...options };
+      console.log('Adding player ', { player, address });
       const tx = await wslFantasyLeagueContract.addPlayer(address, player);
       await tx.wait();
       console.log('player added successfully');
     };
-    it('can add a player without all values', async function () {
-      const [deployer] = await ethers.getSigners();
-      await addBilly({ phone: '' });
-      const player = await wslFantasyLeagueContract.players(deployer.address);
-      console.log(player);
-    });
     it('can add a player', async function () {
       const [deployer] = await ethers.getSigners();
       await addBilly();
+      console.log('Getting player at ', deployer.address);
       const player = await wslFantasyLeagueContract.players(deployer.address);
-      expect(player.name).to.equal('billy');
-      expect(player.email).to.equal('wlei6277@gmail.com');
-      expect(player.phone).to.equal('0419208400');
+      expect(player).to.equal('billy');
     });
     it('can update a player', async function () {
       const [deployer] = await ethers.getSigners();
       await addBilly();
       const player = await wslFantasyLeagueContract.players(deployer.address);
-      expect(player.name).to.equal('billy');
-      expect(player.email).to.equal('wlei6277@gmail.com');
-      expect(player.phone).to.equal('0419208400');
-      await addBilly({ email: 'billyjamesleitch@hotmail.com' });
+      expect(player).to.equal('billy');
+      await addBilly({ name: 'billsta' });
       const updatedPlayer = await wslFantasyLeagueContract.players(deployer.address);
-      expect(updatedPlayer.name).to.equal('billy');
-      expect(updatedPlayer.email).to.equal('billyjamesleitch@hotmail.com');
-      expect(updatedPlayer.phone).to.equal('0419208400');
+      expect(updatedPlayer).to.equal('billsta');
     });
     it('supports multiple players', async function () {
       await addBilly();

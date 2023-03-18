@@ -35,18 +35,13 @@ import { WSLNFT, WSLFantasyLeague } from '../../../generated/contract-types';
 
 export const DEBUG = false;
 
-export interface Player {
-  name: string;
-  email: string;
-  phone: string;
-}
 export interface SurferData {
   tokenId: string;
   name: string;
   imgUrl: string;
   ownerAddress: string;
   isAvailable: boolean;
-  owner: Player;
+  owner: string;
 }
 
 export const Main: FC = () => {

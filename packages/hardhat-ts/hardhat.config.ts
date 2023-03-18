@@ -379,13 +379,17 @@ const findFirstAddr = async (ethers: TEthers, addr: string) => {
 task('add-player', 'Add a player to the league')
   .addParam('address', 'the address of the player')
   .addParam('name', 'name of the player')
-  .addOptionalParam('email', 'email of the player')
-  .addOptionalParam('phone', 'phone number of the player')
   .setAction(async ({ address, ...player }, { ethers, deployments, getNamedAccounts }) => {
+    console.log('Adding player ', player);
+    console.log('Getting league address');
     const { address: leagueAddress } = await deployments.get('WSLFantasyLeague');
+    console.log('Getting league contract at address ', leagueAddress);
     const league = await ethers.getContractAt<WSLFantasyLeague>('WSLFantasyLeague', leagueAddress);
+    console.log('Adding player');
     const tx = await league.addPlayer(address, player);
+    console.log('Waiting on transaction');
     await tx.wait();
+    console.log('Player saved - fetching to confirm data');
     const newPlayer = await league.players(address);
     console.log('Player added with the following params ', newPlayer);
   });
