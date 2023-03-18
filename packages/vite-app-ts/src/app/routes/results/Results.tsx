@@ -1,6 +1,6 @@
 import { Row, Col, Divider, Button } from 'antd';
 import { useEthersContext } from 'eth-hooks/context';
-import { BigNumber } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { FC, useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 import { SurferData } from '../main/Main';
@@ -32,9 +32,10 @@ const Results: FC<ResultsProps> = ({ fantasyRead, weiToUsd, setSettleLeagueModal
     const updateChampionWinnings = async (): Promise<void> => {
       const shareForComps = await fantasyRead.COMPETITION_SHARE();
       const potInWei = await fantasyRead.pot();
+      const leagueBalance = await fantasyRead.provider.getBalance(fantasyRead.address);
 
       if (potInWei) {
-        setTotalPrizeMoneyUsd(weiToUsd(potInWei));
+        setTotalPrizeMoneyUsd(weiToUsd(leagueBalance));
         const weiForComps = potInWei.mul(shareForComps).div(10000);
         const update = potInWei.sub(weiForComps);
         setChampionWinnings(weiToUsd(update));
