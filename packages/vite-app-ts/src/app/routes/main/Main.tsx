@@ -28,10 +28,13 @@ import { useDebounce } from 'use-debounce';
 
 import Surfers from './components/Surfers';
 import Results from '../results/Results';
+import CompResults from '../results/CompResults';
 import Info from '../how-to-play/Info';
 import SettledLeagueMessage from './components/SettledLeagueMessage';
 
 import { WSLNFT, WSLFantasyLeague } from '../../../generated/contract-types';
+
+import oldLeagueEvents from '../../../../oldLeagueCompSettledEvents.json';
 
 export const DEBUG = false;
 
@@ -235,6 +238,9 @@ export const Main: FC = () => {
                     setSettleCompModalIsOpen={setSettleCompModalIsOpen}
                     setSettleLeagueModalIsOpen={setSettleLeagueModalIsOpen}
                   />
+                </Route>
+                <Route exact path="/results">
+                  <CompResults surferData={surferData} weiToUsd={(wei: BigNumber): string => weiToUsd(wei, ethPrice)} />
                 </Route>
                 <Route path="/mainnetdai">
                   {mainnetProvider != null && (

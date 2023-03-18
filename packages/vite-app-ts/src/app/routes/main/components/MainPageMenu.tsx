@@ -41,6 +41,15 @@ export const MainPageMenu: FC<IMainPageMenuProps> = (props) => (
         Money
       </Link>
     </Menu.Item>
+    <Menu.Item key="/results">
+      <Link
+        onClick={() => {
+          props.setRoute('/results');
+        }}
+        to="/results">
+        Results
+      </Link>
+    </Menu.Item>
     <Menu.Item key="/mainnetdai">
       <Link
         onClick={() => {
