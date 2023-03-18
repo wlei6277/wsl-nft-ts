@@ -26,6 +26,8 @@ import { TEthers } from '../hardhat-ts/helpers/types/hardhat-type-extensions';
 import { WSLNFT } from '../../packages/vite-app-ts/src/generated/contract-types/WSLNFT';
 import { WSLFantasyLeague } from '../../packages/vite-app-ts/src/generated/contract-types/WSLFantasyLeague';
 
+type TNetworkNames = 'localhost' | 'mainnet' | 'kovan' | 'rinkeby' | 'ropsten' | 'goerli' | 'xdai' | 'matic' | 'mumbai' | 'optimism' | 'optimisticGoerli';
+
 declare module 'hardhat/types/runtime' {
   // This is an example of an extension to the Hardhat Runtime Environment.
   // This new field will be available in tasks' actions, scripts, and tests.
@@ -39,7 +41,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 // Select the network you want to deploy to here:
 //
 
-const defaultNetwork = 'localhost';
+const defaultNetwork: TNetworkNames = 'optimisticGoerli';
 
 const getMnemonic = () => {
   try {
@@ -68,6 +70,12 @@ const config: HardhatUserConfig = {
   networks: {
     optimism: {
       url: 'https://optimism-mainnet.infura.io/v3/28335438fdf84172aa7211d86c94aee6',
+      accounts: {
+        mnemonic: getMnemonic(),
+      },
+    },
+    optimisticGoerli: {
+      url: 'https://optimism-goerli.infura.io/v3/28335438fdf84172aa7211d86c94aee6',
       accounts: {
         mnemonic: getMnemonic(),
       },

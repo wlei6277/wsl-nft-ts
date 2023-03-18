@@ -11,7 +11,8 @@ export type TNetworkNames =
   | 'xdai'
   | 'matic'
   | 'mumbai'
-  | 'optimism';
+  | 'optimism'
+  | 'optimisticGoerli';
 
 export const NETWORKS: Record<TNetworkNames, TNetworkInfo> = {
   localhost: {
@@ -96,5 +97,12 @@ export const NETWORKS: Record<TNetworkNames, TNetworkInfo> = {
     chainId: 10,
     rpcUrl: `https://optimism-mainnet.infura.io/v3/28335438fdf84172aa7211d86c94aee6`,
     blockExplorer: 'https://optimism.etherscan.io/',
+  },
+  optimisticGoerli: {
+    name: 'optimisticGoerli',
+    color: '#7003DD',
+    chainId: 420,
+    rpcUrl: 'https://optimism-goerli.infura.io/v3/28335438fdf84172aa7211d86c94aee6',
+    blockExplorer: 'https://goerli-explorer.optimism.io',
   },
 };
