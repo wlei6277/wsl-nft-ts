@@ -19,6 +19,7 @@ import * as path from 'path';
 import * as chalk from 'chalk';
 
 import { Provider, TransactionRequest } from '@ethersproject/providers';
+import { remainingSurferTokenIds } from './assets/cutoffSurfers';
 
 import { HardhatUserConfig, task } from 'hardhat/config';
 import { HttpNetworkUserConfig } from 'hardhat/types';
@@ -41,7 +42,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 // Select the network you want to deploy to here:
 //
 
-const defaultNetwork: TNetworkNames = 'optimisticGoerli';
+const defaultNetwork: TNetworkNames = 'localhost';
 
 const getMnemonic = () => {
   try {
@@ -436,7 +437,8 @@ task('transfer-league', 'Transfer surfers which havent been bought yet to anothe
     for (let i = 0; i < numSurfers; i += 1) {
       const tokenId = await nftContract.tokenByIndex(i);
       const ownerAddress = await nftContract.ownerOf(tokenId);
-      if (ownerAddress === oldLeagueAddress) {
+      const isRemainingSurfer = remainingSurferTokenIds.includes(Number(tokenId));
+      if (isRemainingSurfer && ownerAddress === oldLeagueAddress) {
         console.log('Buying surfer ', tokenId.toString());
         const buyTx = await oldContract.buySurfer(tokenId, { value: initPrice.toString() });
         await buyTx.wait();
@@ -600,4 +602,32 @@ task('send', 'Send ETH')
     debug(JSON.stringify(txRequest, null, 2));
 
     return send(fromSigner as Signer, txRequest);
+  });
+
+// This does not work because we can not call transfer or approval on behalf of the deployed smart contract
+task('check-transfer')
+  .addParam('address', 'Address of the old league')
+  .setAction(async (taskArgs, { ethers, deployments, getNamedAccounts }) => {
+    const { address: oldLeagueAddress } = taskArgs;
+
+    const { address: newLeagueAddress } = await deployments.get('WSLFantasyLeague');
+    console.log('Fetching new league contract at ', newLeagueAddress);
+    const newContract = await ethers.getContractAt<WSLFantasyLeague>('WSLFantasyLeague', newLeagueAddress);
+
+    console.log('Fetching old league contract at ', oldLeagueAddress);
+    const oldContract = await ethers.getContractAt<WSLFantasyLeague>('WSLFantasyLeague', oldLeagueAddress);
+
+    const { address: nftContractAddress } = await deployments.get('WSLNFT');
+    console.log('Fetching NFT contract at ', nftContractAddress);
+    const nftContract = await ethers.getContractAt<WSLNFT>('WSLNFT', nftContractAddress);
+
+    const testTokenId = 1;
+    const initialOwner = await nftContract.ownerOf(testTokenId);
+
+    console.log('Trying to transfer a surfer from old to new league directly');
+    const transferTx = await nftContract.transferFrom(oldLeagueAddress, newLeagueAddress, testTokenId);
+    await transferTx.wait();
+
+    const newOwner = await nftContract.ownerOf(testTokenId);
+    console.log('If we got here then it probably worked: ', { initialOwner, newOwner });
   });
