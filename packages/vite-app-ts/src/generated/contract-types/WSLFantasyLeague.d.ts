@@ -28,11 +28,13 @@ interface WSLFantasyLeagueInterface extends ethers.utils.Interface {
     "SHARE_FOR_FIRST()": FunctionFragment;
     "SHARE_FOR_SECOND()": FunctionFragment;
     "SHARE_FOR_THIRD()": FunctionFragment;
+    "addPlayer(address,(string))": FunctionFragment;
     "buySurfer(uint256)": FunctionFragment;
     "calculateCompetitionWinnings()": FunctionFragment;
     "hasBeenSettled()": FunctionFragment;
     "numUnsettledCompetitions()": FunctionFragment;
     "owner()": FunctionFragment;
+    "players(address)": FunctionFragment;
     "pot()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "settleCompetition(uint256,uint256,uint256)": FunctionFragment;
@@ -66,6 +68,10 @@ interface WSLFantasyLeagueInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "addPlayer",
+    values: [string, { name: string }]
+  ): string;
+  encodeFunctionData(
     functionFragment: "buySurfer",
     values: [BigNumberish]
   ): string;
@@ -82,6 +88,7 @@ interface WSLFantasyLeagueInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: "players", values: [string]): string;
   encodeFunctionData(functionFragment: "pot", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -125,6 +132,7 @@ interface WSLFantasyLeagueInterface extends ethers.utils.Interface {
     functionFragment: "SHARE_FOR_THIRD",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addPlayer", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "buySurfer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "calculateCompetitionWinnings",
@@ -139,6 +147,7 @@ interface WSLFantasyLeagueInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "players", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pot", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -244,6 +253,12 @@ export class WSLFantasyLeague extends BaseContract {
 
     SHARE_FOR_THIRD(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    addPlayer(
+      playerAddress: string,
+      player: { name: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     buySurfer(
       tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -264,6 +279,11 @@ export class WSLFantasyLeague extends BaseContract {
     numUnsettledCompetitions(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
+
+    players(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<[string] & { name: string }>;
 
     pot(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -303,6 +323,12 @@ export class WSLFantasyLeague extends BaseContract {
 
   SHARE_FOR_THIRD(overrides?: CallOverrides): Promise<BigNumber>;
 
+  addPlayer(
+    playerAddress: string,
+    player: { name: string },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   buySurfer(
     tokenId: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -323,6 +349,8 @@ export class WSLFantasyLeague extends BaseContract {
   numUnsettledCompetitions(overrides?: CallOverrides): Promise<BigNumber>;
 
   owner(overrides?: CallOverrides): Promise<string>;
+
+  players(arg0: string, overrides?: CallOverrides): Promise<string>;
 
   pot(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -362,6 +390,12 @@ export class WSLFantasyLeague extends BaseContract {
 
     SHARE_FOR_THIRD(overrides?: CallOverrides): Promise<BigNumber>;
 
+    addPlayer(
+      playerAddress: string,
+      player: { name: string },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     buySurfer(tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     calculateCompetitionWinnings(
@@ -379,6 +413,8 @@ export class WSLFantasyLeague extends BaseContract {
     numUnsettledCompetitions(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<string>;
+
+    players(arg0: string, overrides?: CallOverrides): Promise<string>;
 
     pot(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -481,6 +517,12 @@ export class WSLFantasyLeague extends BaseContract {
 
     SHARE_FOR_THIRD(overrides?: CallOverrides): Promise<BigNumber>;
 
+    addPlayer(
+      playerAddress: string,
+      player: { name: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     buySurfer(
       tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -493,6 +535,8 @@ export class WSLFantasyLeague extends BaseContract {
     numUnsettledCompetitions(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    players(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     pot(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -533,6 +577,12 @@ export class WSLFantasyLeague extends BaseContract {
 
     SHARE_FOR_THIRD(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    addPlayer(
+      playerAddress: string,
+      player: { name: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     buySurfer(
       tokenId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -549,6 +599,11 @@ export class WSLFantasyLeague extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    players(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     pot(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
