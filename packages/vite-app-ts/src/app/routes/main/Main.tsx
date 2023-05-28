@@ -41,7 +41,7 @@ export interface SurferData {
   imgUrl: string;
   ownerAddress: string;
   isAvailable: boolean;
-  owner: string;
+  // owner: string;
 }
 
 export const Main: FC = () => {
@@ -130,14 +130,14 @@ export const Main: FC = () => {
           name: string;
           image: string;
         };
-        const owner = await fantasyLeague.players(ownerAddress);
+        // const owner = await fantasyLeague.players(ownerAddress);
         return {
           name,
           imgUrl: image.replace('ipfs://', 'https://ipfs.io/ipfs/'),
           tokenId: tokenId.toString(),
           ownerAddress,
           isAvailable: ownerAddress === fantasyLeague?.address,
-          owner,
+          // owner,
         };
       };
       const update = await Promise.all([...new Array(numTokens.toNumber()).fill(1)].map((_, i) => getSurferData(i)));

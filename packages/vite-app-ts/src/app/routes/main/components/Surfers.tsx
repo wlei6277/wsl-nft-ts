@@ -26,10 +26,11 @@ interface SurferProps {
 const Surfer: FC<SurferProps> = ({ surfer, buySurfer, initialPriceUsd, nftContractAddress, isDisabled }) => {
   const { account } = useEthersContext();
   const { targetNetwork } = useScaffoldAppProviders();
-  const { name, tokenId, imgUrl, isAvailable, ownerAddress, owner } = surfer;
+  // const { name, tokenId, imgUrl, isAvailable, ownerAddress, owner } = surfer;
+  const { name, tokenId, imgUrl, isAvailable, ownerAddress } = surfer;
   let description = account ? `Purchase for ${initialPriceUsd}` : 'Connect your wallet to purchase this surfer';
   const isOwner = ownerAddress === account;
-  const ownerIdentifier = owner || ownerAddress;
+  const ownerIdentifier = ownerAddress;
   if (!isAvailable) {
     description = isOwner ? 'You own this surfer' : `This card is owned by ${ownerIdentifier}`;
   }
