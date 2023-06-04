@@ -42,7 +42,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 // Select the network you want to deploy to here:
 //
 
-const defaultNetwork: TNetworkNames = 'localhost';
+const defaultNetwork: TNetworkNames = 'optimism';
 
 const getMnemonic = () => {
   try {

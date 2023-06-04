@@ -811,7 +811,7 @@
       "chainId": "10",
       "contracts": {
         "WSLFantasyLeague": {
-          "address": "0x839c9c5b89486Fe9Ed79D8845Ead073bE39DD3fc",
+          "address": "0xc65FA83C35C841BaD076B59D0Ab1899E10d66CC7",
           "abi": [
             {
               "inputs": [
@@ -980,6 +980,31 @@
             {
               "inputs": [
                 {
+                  "internalType": "address",
+                  "name": "playerAddress",
+                  "type": "address"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "string",
+                      "name": "name",
+                      "type": "string"
+                    }
+                  ],
+                  "internalType": "struct WSLFantasyLeague.Player",
+                  "name": "player",
+                  "type": "tuple"
+                }
+              ],
+              "name": "addPlayer",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
                   "internalType": "uint256",
                   "name": "tokenId",
                   "type": "uint256"
@@ -1047,6 +1072,25 @@
                   "internalType": "address",
                   "name": "",
                   "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "name": "players",
+              "outputs": [
+                {
+                  "internalType": "string",
+                  "name": "name",
+                  "type": "string"
                 }
               ],
               "stateMutability": "view",
@@ -1133,6 +1177,10 @@
               ],
               "stateMutability": "view",
               "type": "function"
+            },
+            {
+              "stateMutability": "payable",
+              "type": "receive"
             }
           ]
         },
@@ -2943,7 +2991,7 @@
           ]
         },
         "WSLFantasyLeague": {
-          "address": "0x689988b2e2Ee866d84766c7F3BF93B39e0374E6A",
+          "address": "0x8FB09568124812C738693C58A096d92DE74b65a1",
           "abi": [
             {
               "inputs": [

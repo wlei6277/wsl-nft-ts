@@ -28,7 +28,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironmentExtended) => {
     log: true,
   });
 
-  const mintSurfers = false;
+  const mintSurfers = true;
 
   if (mintSurfers) {
     const surferParser = parseSurfers();
